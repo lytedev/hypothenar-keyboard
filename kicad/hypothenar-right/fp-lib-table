@@ -1,0 +1,12 @@
+(fp_lib_table
+  (lib (name "kleeb_mcu")(type "KiCad")(uri "${KIPRJMOD}/../lib/kleeb/mcu.pretty")(options "")(descr "kleeb MCU footprints (MS88SF3 module lives here)"))
+  (lib (name "kleeb_ic")(type "KiCad")(uri "${KIPRJMOD}/../lib/kleeb/ic.pretty")(options "")(descr "kleeb IC footprints"))
+  (lib (name "kleeb_display")(type "KiCad")(uri "${KIPRJMOD}/../lib/kleeb/display.pretty")(options "")(descr "kleeb display footprints"))
+  (lib (name "kleeb_sensor")(type "KiCad")(uri "${KIPRJMOD}/../lib/kleeb/sensor.pretty")(options "")(descr "kleeb sensor footprints"))
+  (lib (name "kleeb_misc")(type "KiCad")(uri "${KIPRJMOD}/../lib/kleeb/misc.pretty")(options "")(descr "kleeb misc footprints"))
+  (lib (name "kleeb_switch")(type "KiCad")(uri "${KIPRJMOD}/../lib/kleeb/switch.pretty")(options "")(descr "kleeb switch footprints"))
+  (lib (name "kleeb_pg1350")(type "KiCad")(uri "${KIPRJMOD}/../lib/kleeb/pg1350.pretty")(options "")(descr "kleeb Kailh Choc footprints (matches our switches)"))
+  (lib (name "marbastlib_various")(type "KiCad")(uri "${KIPRJMOD}/../lib/marbastlib/footprints/marbastlib-various.pretty")(options "")(descr "marbastlib general"))
+  (lib (name "marbastlib_choc")(type "KiCad")(uri "${KIPRJMOD}/../lib/marbastlib/footprints/marbastlib-choc.pretty")(options "")(descr "marbastlib Choc"))
+  (lib (name "marbastlib_xp_choc")(type "KiCad")(uri "${KIPRJMOD}/../lib/marbastlib/footprints/marbastlib-xp-choc.pretty")(options "")(descr "marbastlib choc plus"))
+)

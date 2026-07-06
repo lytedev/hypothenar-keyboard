@@ -1,0 +1,14 @@
+identifier: hypothenar
+name: Hypothenar
+type: mcu
+arch: arm
+ram: 256
+flash: 1024
+toolchain:
+  - zephyr
+  - gnuarmemb
+supported:
+  - i2c
+  - gpio
+  - usb_device
+  - ble

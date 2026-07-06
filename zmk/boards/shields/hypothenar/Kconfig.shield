@@ -1,0 +1,5 @@
+config SHIELD_HYPOTHENAR_LEFT
+    def_bool $(shields_list_contains,hypothenar_left)
+
+config SHIELD_HYPOTHENAR_RIGHT
+    def_bool $(shields_list_contains,hypothenar_right)

@@ -1,0 +1,134 @@
+// SPDX-License-Identifier: MIT
+//
+// Hypothenar: MS88SF3-nRF52840 module on a custom keyboard PCB.
+//
+// Pin assignments below are STARTING POINTS keyed off v1/ergogen/config.yaml's
+// placeholder MS88SF3 pad assignments (P14=USB_DP, P15=USB_DM, P20=I2C_SCL,
+// P21=I2C_SDA, P22=I2C_RESET). Confirm against the Minew datasheet pad-to-
+// nRF52840-pin map before fabbing the PCB, then update both this file
+// AND v1/ergogen/config.yaml so the routing matches.
+
+/dts-v1/;
+#include <nordic/nrf52840_qiaa.dtsi>
+#include "hypothenar-pinctrl.dtsi"
+
+/ {
+    model = "Hypothenar";
+    compatible = "thenar,hypothenar";
+
+    chosen {
+        zephyr,code-partition = &code_partition;
+        zephyr,sram = &sram0;
+        zephyr,flash = &flash0;
+        zephyr,console = &cdc_acm_uart;
+        zephyr,uart-mcumgr = &cdc_acm_uart;
+        zephyr,bt-mon-uart = &cdc_acm_uart;
+        zephyr,bt-c2h-uart = &cdc_acm_uart;
+        zephyr,uart-pipe = &cdc_acm_uart;
+        zephyr,bt-hci = &bt_hci_controller;
+        zmk,battery = &vbatt;
+    };
+
+    // Battery voltage divider on a SAADC channel. Update the gpios pin
+    // once the PCB routing pins this to a specific MS88SF3 pad.
+    vbatt: vbatt {
+        compatible = "zmk,battery-voltage-divider";
+        io-channels = <&adc 7>;
+        output-ohms = <2000000>;
+        full-ohms = <(2000000 + 820000)>;
+        power-gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
+    };
+};
+
+&adc {
+    status = "okay";
+};
+
+&gpiote {
+    status = "okay";
+};
+
+&gpio0 {
+    status = "okay";
+};
+
+&gpio1 {
+    status = "okay";
+};
+
+// I2C bus used for the two MCP23017 expanders. Default to 400 kHz; bump
+// to 1 MHz only after smoke testing.
+&i2c0 {
+    compatible = "nordic,nrf-twi";
+    status = "okay";
+    clock-frequency = <I2C_BITRATE_FAST>;
+    pinctrl-0 = <&i2c0_default>;
+    pinctrl-1 = <&i2c0_sleep>;
+    pinctrl-names = "default", "sleep";
+
+    mcp_a: mcp23017@20 {
+        compatible = "microchip,mcp23017";
+        status = "okay";
+        reg = <0x20>;
+        gpio-controller;
+        #gpio-cells = <2>;
+        ngpios = <16>;
+        // RESET is a board-wide net wired to a single MCU GPIO; both
+        // expanders share it. The driver pulses it on init.
+        reset-gpios = <&gpio0 15 GPIO_ACTIVE_LOW>;
+    };
+
+    mcp_b: mcp23017@21 {
+        compatible = "microchip,mcp23017";
+        status = "okay";
+        reg = <0x21>;
+        gpio-controller;
+        #gpio-cells = <2>;
+        ngpios = <16>;
+        // reset-gpios omitted - same net is owned by mcp_a's binding.
+    };
+};
+
+&usbd {
+    status = "okay";
+    cdc_acm_uart: cdc_acm_uart {
+        compatible = "zephyr,cdc-acm-uart";
+    };
+};
+
+zephyr_udc0: &usbd {
+    status = "okay";
+};
+
+&flash0 {
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        // Match nice_nano_v2 / Adafruit nRF52 bootloader layout so the
+        // same UF2 path works.
+        sd_partition: partition@0 {
+            label = "softdevice";
+            reg = <0x00000000 0x00026000>;
+        };
+        code_partition: partition@26000 {
+            label = "code_partition";
+            reg = <0x00026000 0x000c6000>;
+        };
+        storage_partition: partition@ec000 {
+            label = "storage";
+            reg = <0x000ec000 0x00008000>;
+        };
+        boot_partition: partition@f4000 {
+            label = "adafruit_boot";
+            reg = <0x000f4000 0x0000c000>;
+        };
+    };
+};
+
+zephyr,user {
+    bt_hci_controller: bt-hci-controller {
+        compatible = "zephyr,bt-hci-ll-sw-split";
+    };
+};

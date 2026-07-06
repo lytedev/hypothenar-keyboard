@@ -1,0 +1,11 @@
+(sym_lib_table
+  (lib (name "kleeb_mcu")(type "KiCad")(uri "${KIPRJMOD}/../lib/kleeb/mcu.kicad_sym")(options "")(descr "kleeb MCUs (MS88SF3 nRF52840 module lives here)"))
+  (lib (name "kleeb_ic")(type "KiCad")(uri "${KIPRJMOD}/../lib/kleeb/ic.kicad_sym")(options "")(descr "kleeb ICs"))
+  (lib (name "kleeb_display")(type "KiCad")(uri "${KIPRJMOD}/../lib/kleeb/display.kicad_sym")(options "")(descr "kleeb displays (Nice!View etc.)"))
+  (lib (name "kleeb_sensor")(type "KiCad")(uri "${KIPRJMOD}/../lib/kleeb/sensor.kicad_sym")(options "")(descr "kleeb sensors"))
+  (lib (name "kleeb_misc")(type "KiCad")(uri "${KIPRJMOD}/../lib/kleeb/misc.kicad_sym")(options "")(descr "kleeb misc"))
+  (lib (name "kleeb_switch")(type "KiCad")(uri "${KIPRJMOD}/../lib/kleeb/switch.kicad_sym")(options "")(descr "kleeb switches"))
+  (lib (name "marbastlib_various")(type "KiCad")(uri "${KIPRJMOD}/../lib/marbastlib/symbols/marbastlib-various.kicad_sym")(options "")(descr "marbastlib general parts (TP4056, XC6206, USB-C etc.)"))
+  (lib (name "marbastlib_promicroish")(type "KiCad")(uri "${KIPRJMOD}/../lib/marbastlib/symbols/marbastlib-promicroish.kicad_sym")(options "")(descr "marbastlib pro-micro footprint symbols"))
+  (lib (name "marbastlib_choc")(type "KiCad")(uri "${KIPRJMOD}/../lib/marbastlib/symbols/marbastlib-choc.kicad_sym")(options "")(descr "marbastlib Choc switches"))
+)

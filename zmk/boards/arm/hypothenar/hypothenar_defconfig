@@ -1,0 +1,51 @@
+CONFIG_SOC_SERIES_NRF52X=y
+CONFIG_SOC_NRF52840_QIAA=y
+CONFIG_BOARD_HYPOTHENAR=y
+
+# Enable MPU
+CONFIG_ARM_MPU=y
+
+# Enable HW stack protection
+CONFIG_HW_STACK_PROTECTION=y
+
+# Enable GPIO
+CONFIG_GPIO=y
+
+# Floating Point Unit
+CONFIG_FPU=y
+
+# Console
+CONFIG_CONSOLE=y
+CONFIG_UART_CONSOLE=y
+
+# Adafruit nRF52 bootloader places the application at 0x26000 (after
+# MBR + SoftDevice slot kept for compatibility). Match the nice_nano_v2
+# layout - same bootloader, same partition table.
+CONFIG_USE_DT_CODE_PARTITION=y
+
+# Enable USB
+CONFIG_USB_DEVICE_STACK=y
+CONFIG_USB_DEVICE_PRODUCT="Hypothenar"
+CONFIG_USB_DEVICE_VID=0x1d50
+CONFIG_USB_DEVICE_PID=0x615e
+CONFIG_USB_DEVICE_MANUFACTURER="Thenar"
+CONFIG_USB_NUMOF_EP_WRITE_RETRIES=10
+
+# Bluetooth (handled via Kconfig.defconfig)
+CONFIG_BT=y
+CONFIG_BT_PERIPHERAL=y
+CONFIG_BT_CENTRAL=y
+CONFIG_BT_GATT_CLIENT=y
+CONFIG_BT_SETTINGS=y
+CONFIG_SETTINGS=y
+CONFIG_NVS=y
+CONFIG_FLASH=y
+CONFIG_FLASH_PAGE_LAYOUT=y
+CONFIG_FLASH_MAP=y
+
+# I2C for MCP23017s
+CONFIG_I2C=y
+
+# Power management
+CONFIG_PM=y
+CONFIG_PM_DEVICE=y

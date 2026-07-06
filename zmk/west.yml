@@ -1,0 +1,14 @@
+manifest:
+  remotes:
+    - name: zmkfirmware
+      url-base: https://github.com/zmkfirmware
+  projects:
+    - name: zmk
+      remote: zmkfirmware
+      revision: main
+      import: app/west.yml
+  self:
+    # zmk-nix expects the manifest's enclosing directory to be 'config/'
+    # relative to the build src. The v1-firmware derivation in flake.nix
+    # copies v1/zmk to <src>/config to satisfy that convention.
+    path: config

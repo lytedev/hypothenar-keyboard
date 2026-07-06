@@ -1,0 +1,545 @@
+# Hypothenar - chip-direct PCBA design.
+#
+# Architecturally different from rc1:
+#   - Discrete nRF52840 module (MS88SF3) on the PCB, not a Nice!Nano daughter board.
+#   - 2x MCP23017 I/O expanders per half driving the switch matrix via I2C.
+#   - Switch-per-pin (each key directly wired to a unique GPIO) - no diodes.
+#   - One PCB design per half (no reversibility; v1 emits this config twice
+#     with mirroring for the right half).
+#
+# Status: ANNOTATED STARTER, NOT VALIDATED. Pin assignments to the MS88SF3
+# (P1-P50) are placeholders - verify against the datasheet before fab.
+# Component positions in the MCU/power zone are first-pass guesses; expect
+# to iterate in KiCad once you can see the layout.
+
+units:
+  kx: cx
+  ky: cy
+  px: kx+2
+  py: ky+2
+  # MCU module: MS88SF3 is 12.5 x 18.5 mm (kleeb footprint extents)
+  mcu_width: 13
+  mcu_height: 19
+  # I/O expander: MCP23017 in SOIC-28W is ~7.5 x 18 mm
+  mcp_width: 8
+  mcp_height: 19
+  # USB-C: ~9 x 7.5 mm
+  usbc_width: 10
+  usbc_height: 8
+  # Power chips smaller: TP4056 5x4, XC6206 4x2.5, USBLC6 3x2
+  # General spacing
+  mcu_padding: 1.5
+  switchplate_switch_cutout: 14
+  scrollwheel_width: 17
+  scrollwheel_height: 14
+  screw_diameter: 4.7
+  screw_hole: 4.1
+
+points:
+  rotate: 5
+  zones:
+    # === Matrix: 5 rows x 6 cols, same physical layout as rc1's `thenar/`.
+    # Each key gets a unique `switch_net` (not a matrix col_net/row_net) so
+    # we can wire each switch to a dedicated MCP23017 GPIO.
+    matrix:
+      anchor.shift: [50, -150]
+      key:
+        tags: [switch]
+        padding: 1ky
+        spread: 1kx
+      columns:
+        outer:
+          rows:
+            mod.skip: true
+          key:
+            column_net: GND      # one pad of each switch -> GND
+        pinky:
+          rows:
+            mod.skip: true
+          key:
+            origin: [0, 8]
+            column_net: GND
+        ring:
+          rows:
+            mod.skip: true
+          key:
+            origin: [0, 8]
+            stagger: 0.66ky
+            splay: -5
+            column_net: GND
+        middle:
+          key:
+            stagger: 0.33ky
+            column_net: GND
+        index:
+          key:
+            stagger: -0.33ky
+            column_net: GND
+        inner:
+          rows:
+            mod.skip: true
+          key:
+            stagger: -2.5
+            column_net: GND
+      rows:
+        # The `row_net` ergogen assigns to each row would normally be the
+        # column-driver wire. In switch-per-pin we override per-key with
+        # a unique net via the `from`/`to` params on the choc footprint -
+        # see the pcbs.footprints section below.
+        mod:    { row_net: __mod__,    tags: [switch_bottom] }
+        bottom: { row_net: __bottom__, tags: [switch_top] }
+        home:   { row_net: __home__,   tags: [switch_bottom] }
+        top:    { row_net: __top__,    tags: [switch_top] }
+        num:    { row_net: __num__,    tags: [switch_bottom] }
+
+    # === Thumb cluster
+    thumbs:
+      anchor:
+        ref: matrix_middle_home
+        shift: [38, -44]
+      key:
+        tags: [switch]
+        padding: 1ky
+        spread: 1kx
+      columns:
+        layer:
+          key:
+            splay: -15
+            column_net: GND
+        space:
+          key:
+            width: 1.5kx
+            splay: 75
+            shift: [13-kx, -3]
+            column_net: GND
+            tags: [switch_space]
+      rows:
+        cluster:
+          row_net: __thumb__
+
+    # === Scrollwheel encoder (EVQWGD001)
+    scrollwheel:
+      anchor:
+        ref: matrix_inner_bottom
+      columns:
+        scrollwheel:
+          key:
+            tags: [scrollwheel]
+            shift: [kx+mcu_padding-1.25, 0]
+            column_net: GND
+            width: scrollwheel_width
+            height: scrollwheel_height
+      rows:
+        scrollwheel:
+          row_net: __scroll__
+
+    # === MCU module (MS88SF3 nRF52840)
+    # Placed to the right of the matrix in the same general area Nice!Nano
+    # sat in rc1, but as a single discrete component rather than a module
+    # plus daughter board.
+    mcu:
+      anchor:
+        ref: matrix_inner_num
+        shift: [kx+mcu_padding+mcu_width/2, -mcu_height/2]
+      columns:
+        mcu:
+          key:
+            tags: [mcu]
+            width: mcu_width
+            height: mcu_height
+
+    # === I/O expanders. Two MCP23017s per half, placed below the MCU.
+    # We expect to refine positions in KiCad once the keepout areas are clear.
+    io_expander_1:
+      anchor:
+        ref: mcu_mcu
+        shift: [0, mcu_height/2 + mcp_height/2 + 3]
+      columns:
+        ic:
+          key:
+            # Per-zone tag (not shared) so the pcbs.footprints `where:`
+            # filter can target each expander individually.
+            tags: [mcp_a]
+            width: mcp_width
+            height: mcp_height
+    io_expander_2:
+      anchor:
+        ref: io_expander_1_ic
+        shift: [mcp_width + 3, 0]
+      columns:
+        ic:
+          key:
+            tags: [mcp_b]
+            width: mcp_width
+            height: mcp_height
+
+    # === Power section: USB-C + ESD + charge IC + LDO + slider.
+    # Stacked below the I/O expanders.
+    usb_c:
+      anchor:
+        ref: io_expander_1_ic
+        shift: [-mcu_width, mcp_height/2 + usbc_height/2 + 3]
+      columns:
+        usb:
+          key:
+            tags: [usb_c]
+            width: usbc_width
+            height: usbc_height
+    charge_ic:
+      anchor:
+        ref: usb_c_usb
+        shift: [usbc_width + 4, 0]
+      columns:
+        ic:
+          key:
+            tags: [charge_ic]
+            width: 5
+            height: 4
+    ldo:
+      anchor:
+        ref: charge_ic_ic
+        shift: [7, 0]
+      columns:
+        ic:
+          key:
+            tags: [ldo]
+            width: 4
+            height: 2.5
+    esd:
+      anchor:
+        ref: usb_c_usb
+        shift: [usbc_width/2 + 3, -3]
+      columns:
+        ic:
+          key:
+            tags: [esd]
+            width: 3
+            height: 2
+
+    # === Slider + reset, similar position to rc1
+    slider:
+      anchor:
+        ref: charge_ic_ic
+        shift: [0, 5]
+      columns:
+        sw:
+          key:
+            tags: [slider]
+            width: 8
+            height: 3
+    reset:
+      anchor:
+        ref: slider_sw
+        shift: [6, 0]
+      columns:
+        sw:
+          key:
+            tags: [reset]
+            width: 3.5
+            height: 6.5
+
+    # === Screw holes (4 corners + thumb area)
+    screw_top_left:
+      anchor.ref.aggregate.parts: [matrix_outer_num, matrix_outer_top]
+      anchor.shift: [-2, 0]
+      columns.screw.key.tags: [screw]
+    screw_top_right:
+      anchor.ref.aggregate.parts: [matrix_index_num, matrix_inner_num]
+      columns.screw.key.tags: [screw]
+    screw_bottom_left:
+      anchor.ref.aggregate.parts: [matrix_pinky_bottom, matrix_outer_bottom]
+      columns.screw.key.tags: [screw]
+    screw_bottom_right:
+      anchor.ref.aggregate.parts: [matrix_index_bottom, matrix_index_mod]
+        # shift: [-0.5kx, 0]    # uncomment to nudge
+      columns.screw.key.tags: [screw]
+
+outlines:
+  board:
+    - what: polygon
+      operation: stack
+      fillet: 2
+      points:
+        # Around the matrix
+        - ref: matrix_outer_home
+          shift: [-0.5px, -0.5py]
+        - ref: matrix_outer_top
+          shift: [-0.5px, 0.5py]
+        - ref: matrix_outer_num
+          shift: [-0.5px, 0.5py]
+        - ref: matrix_pinky_num
+          shift: [-0.5px, 0.5py]
+        - ref: matrix_ring_num
+          shift: [-0.5px, 0.5py]
+        - ref: matrix_middle_num
+          shift: [-0.5px, 0.5py]
+        - ref: matrix_middle_num
+          shift: [0.5px, 0.5py]
+        - ref: matrix_inner_num
+          shift: [0.5px, 0.5py]
+        # Wrap right side around MCU + I/O expanders + power
+        - ref: mcu_mcu
+          shift: [mcu_width/2+2, -mcu_height/2-2]
+        - ref: ldo_ic
+          shift: [3, -3]
+        - ref: ldo_ic
+          shift: [3, 5]
+        - ref: thumbs_space_cluster
+          shift: [0.5px, -0.5py]
+        - ref: thumbs_space_cluster
+          shift: [-0.5px, -0.5py]
+        - ref: matrix_index_mod
+          shift: [-0.5px, -0.5py]
+        - ref: matrix_pinky_bottom
+          shift: [0.5px, -0.5py]
+        - ref: matrix_outer_bottom
+          shift: [-0.5px, -0.5py]
+  _switch_cutout:
+    - what: rectangle
+      where: [switch, switch_top, switch_bottom, switch_space]
+      size: switchplate_switch_cutout
+      bound: false
+  _screw_holes:
+    - what: circle
+      where: [screw]
+      radius: 2.05
+  case:
+    - what: outline
+      name: board
+    - what: outline
+      name: _screw_holes
+      operation: subtract
+
+pcbs:
+  keyboard:
+    outlines.main.outline: board
+    footprints:
+      # === Switches: each gets a unique `from` net (named after the key's
+      # position) and `to: GND`. That single unique net per switch is what
+      # an MCP23017 GPIO pin will be wired to.
+      choc:
+        what: choc
+        where: [switch, switch_top, switch_bottom, switch_space]
+        params:
+          keycaps: true
+          reverse: true
+          hotswap: true
+          from: "sw_{{name}}"   # unique per switch via ergogen's {{name}}
+          to: GND
+        adjust:
+          rotate: 180
+
+      # === MCU module - MS88SF3
+      # MS88SF3 pad numbering is sequential 1..50 around the perimeter of
+      # the module (kleeb footprint). Datasheet maps each pad to a specific
+      # nRF52840 GPIO. The assignments below are PLACEHOLDERS - confirm
+      # against https://store.minew.com/blogs/quickstart-ms88sf3 datasheet
+      # before fabbing.
+      mcu:
+        what: ms88sf3
+        where: mcu
+        params:
+          # Power
+          P1: GND       # placeholder
+          P2: VBAT      # placeholder
+          # USB
+          P14: USB_DP   # placeholder
+          P15: USB_DM   # placeholder
+          # I2C bus (to both MCP23017s)
+          P20: I2C_SCL  # placeholder
+          P21: I2C_SDA  # placeholder
+          # MCP23017 reset
+          P22: I2C_RESET
+          # Nice!View SPI
+          P30: SPI_SCK
+          P31: SPI_MOSI
+          P32: NV_CS
+          # Encoder rotation (need IRQ-capable pins)
+          P40: ENC_A
+          P41: ENC_B
+          # All other pads default to unconnected (undefined)
+        adjust:
+          rotate: 0
+
+      # === I/O expander #1 - left bank (16 switches)
+      mcp1:
+        what: mcp23017
+        where: mcp_a
+        params:
+          VDD: VCC
+          VSS: GND
+          SCL: I2C_SCL
+          SDA: I2C_SDA
+          RESET: I2C_RESET
+          A0: GND       # address 0x20
+          A1: GND
+          A2: GND
+          # GPB bank (pins 1-8) - num + top rows
+          GPB0: sw_matrix_outer_num
+          GPB1: sw_matrix_pinky_num
+          GPB2: sw_matrix_ring_num
+          GPB3: sw_matrix_middle_num
+          GPB4: sw_matrix_index_num
+          GPB5: sw_matrix_inner_num
+          GPB6: sw_matrix_outer_top
+          GPB7: sw_matrix_pinky_top
+          # GPA bank (pins 21-28) - rest of top + start of home
+          GPA0: sw_matrix_ring_top
+          GPA1: sw_matrix_middle_top
+          GPA2: sw_matrix_index_top
+          GPA3: sw_matrix_inner_top
+          GPA4: sw_matrix_outer_home
+          GPA5: sw_matrix_pinky_home
+          GPA6: sw_matrix_ring_home
+          GPA7: sw_matrix_middle_home
+
+      # === I/O expander #2 - right bank (remaining 12 switches + spares)
+      mcp2:
+        what: mcp23017
+        where: mcp_b
+        params:
+          VDD: VCC
+          VSS: GND
+          SCL: I2C_SCL
+          SDA: I2C_SDA
+          RESET: I2C_RESET
+          A0: VCC       # address 0x21
+          A1: GND
+          A2: GND
+          # GPB bank - rest of home + bottom row
+          GPB0: sw_matrix_index_home
+          GPB1: sw_matrix_inner_home
+          GPB2: sw_matrix_outer_bottom
+          GPB3: sw_matrix_pinky_bottom
+          GPB4: sw_matrix_ring_bottom
+          GPB5: sw_matrix_middle_bottom
+          GPB6: sw_matrix_index_bottom
+          GPB7: sw_matrix_inner_bottom
+          # GPA bank - mod row + thumbs + scrollwheel switch + spares
+          GPA0: sw_matrix_middle_mod
+          GPA1: sw_matrix_index_mod
+          GPA2: sw_thumbs_layer_cluster
+          GPA3: sw_thumbs_space_cluster
+          GPA4: ENC_SW       # scrollwheel button via I/O expander
+          # GPA5-7 left as spares for future expansion
+
+      # === USB-C receptacle
+      # HRO TYPE-C-31-M-12. Pad names match the marbastlib KiCad
+      # footprint: A1..A12 + B1..B12 (per the USB-C spec) plus SH for
+      # the shield tabs.
+      usbc:
+        what: usb_c
+        where: usb_c
+        params:
+          PA1: GND       # GND
+          PA12: GND
+          PB1: GND
+          PB12: GND
+          PA4: VBUS      # VBUS
+          PA9: VBUS
+          PB4: VBUS
+          PB9: VBUS
+          PA5: USB_CC1   # CC1 (pull-down via 5.1k for UFP)
+          PB5: USB_CC2   # CC2 (pull-down via 5.1k for UFP)
+          PA6: USB_DP    # D+
+          PA7: USB_DM    # D-
+          PB6: USB_DP    # D+ (mirror, internally connected through plug)
+          PB7: USB_DM    # D-
+          PA8: USB_SBU1  # not used for 2.0 - leave or tie GND
+          PB8: USB_SBU2
+          PSH: GND       # shield tabs to GND
+
+      # === USB ESD - between USB-C and MCU
+      esd:
+        what: usblc6
+        where: esd
+        params:
+          DP: USB_DP
+          DM: USB_DM
+          GND: GND
+          VBUS: VBUS
+
+      # === Charge IC
+      charge:
+        what: tp4056
+        where: charge_ic
+        params:
+          TEMP: GND
+          PROG: PROG       # tie to GND through 12k for 100mA charge
+          GND: GND
+          VBAT: VBAT
+          STDBY: CHARGE_STDBY
+          CHRG: CHARGE_ACTIVE
+          VCC: VBUS
+          CE: VBUS
+
+      # === LDO 3.3V
+      ldo_3v3:
+        what: xc6206
+        where: ldo
+        params:
+          VIN: VBAT
+          GND: GND
+          VOUT: VCC
+
+      # === Display: Nice!View
+      niceview:
+        what: display_nice_view
+        where: mcu
+        adjust:
+          shift: [25, 0]
+          rotate: 90
+        params:
+          side: F
+          reversible: false
+          MOSI: SPI_MOSI
+          SCK: SPI_SCK
+          VCC: VCC
+          GND: GND
+          CS: NV_CS
+
+      # === Scrollwheel encoder
+      scroll:
+        what: scrollwheel_mirrored
+        where: scrollwheel
+        params:
+          from: ENC_SW   # button presses
+          to: GND
+          A: ENC_A
+          B: GND
+          C: ENC_B
+          D: GND
+
+      # === Slider switch (battery cutoff)
+      slider:
+        what: slider_reversible
+        where: slider
+        params:
+          from: VBAT_SW   # raw battery to slider
+          to: VBAT        # output to TP4056 / MCU when on
+
+      # === Reset button
+      reset_btn:
+        what: reset
+        where: reset
+        params:
+          from: GND
+          to: RESET       # tied to MCU RESET pin (placeholder)
+
+      # === Screw holes
+      screw_holes:
+        what: hole
+        where: [screw]
+        params:
+          size: screw_diameter
+          drill: screw_hole
+
+      # === Silkscreen
+      name_text:
+        what: text
+        where: matrix_middle_home
+        params:
+          text: "Hypothenar"
+        adjust:
+          rotate: 82
+          shift: [-9, -11]

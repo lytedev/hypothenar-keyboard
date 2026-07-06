@@ -1,0 +1,5 @@
+include:
+  - board: hypothenar
+    shield: hypothenar_left
+  - board: hypothenar
+    shield: hypothenar_right

@@ -1,0 +1,58 @@
+// SPDX-License-Identifier: MIT
+//
+// Left half: switch-to-GPIO mapping for v1's MCP23017 expanders.
+//
+// The ordering must match the ergogen-derived position order encoded in
+// default_transform (left.num.outer = position 0, etc.). Pin numbers
+// here are pin OFFSETS on each MCP23017 (0..15), not nRF52840 GPIOs.
+// MCP_A and MCP_B pin assignments mirror v1/ergogen/config.yaml's
+// mcp1 / mcp2 net assignments.
+
+#include "hypothenar.dtsi"
+
+&physical_layout0 {
+    kscan = <&kscan_direct>;
+    transform = <&default_transform>;
+};
+
+&kscan_direct {
+    input-gpios
+        // ---- num row (positions 0..5) - left half columns outer..inner
+        = <&mcp_a 8  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB0: outer_num
+        , <&mcp_a 9  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB1: pinky_num
+        , <&mcp_a 10 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB2: ring_num
+        , <&mcp_a 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB3: middle_num
+        , <&mcp_a 12 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB4: index_num
+        , <&mcp_a 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB5: inner_num
+        // ---- top row (positions 12..17)
+        , <&mcp_a 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB6: outer_top
+        , <&mcp_a 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB7: pinky_top
+        , <&mcp_a 0  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPA0: ring_top
+        , <&mcp_a 1  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPA1: middle_top
+        , <&mcp_a 2  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPA2: index_top
+        , <&mcp_a 3  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPA3: inner_top
+        // ---- home row (positions 24..29)
+        , <&mcp_a 4  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPA4: outer_home
+        , <&mcp_a 5  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPA5: pinky_home
+        , <&mcp_a 6  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPA6: ring_home
+        , <&mcp_a 7  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPA7: middle_home
+        , <&mcp_b 8  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB0: index_home
+        , <&mcp_b 9  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB1: inner_home
+        // ---- bottom row (positions 36..41)
+        , <&mcp_b 10 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB2: outer_bottom
+        , <&mcp_b 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB3: pinky_bottom
+        , <&mcp_b 12 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB4: ring_bottom
+        , <&mcp_b 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB5: middle_bottom
+        , <&mcp_b 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB6: index_bottom
+        , <&mcp_b 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPB7: inner_bottom
+        // ---- mod row + thumbs (positions 48..51)
+        , <&mcp_b 0  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPA0: middle_mod
+        , <&mcp_b 1  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPA1: index_mod
+        , <&mcp_b 2  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPA2: thumb_layer
+        , <&mcp_b 3  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>   // GPA3: thumb_space
+        ;
+};
+
+&encoder_left {
+    status = "okay";
+};

@@ -1,0 +1,81 @@
+// SPDX-License-Identifier: MIT
+//
+// Physical key positions for ZMK Studio. Identical to rc1 (same key
+// layout) - so this file is a copy of config/boards/shields/thenar/
+// thenar-layouts.dtsi. If the v1 PCB layout shifts (e.g. ergogen
+// outline drift), regenerate from v1/ergogen/config.yaml.
+
+#include <physical_layouts.dtsi>
+
+/ {
+    physical_layout0: physical_layout_0 {
+        compatible = "zmk,physical-layout";
+        display-name = "Hypothenar";
+
+        kscan = <&kscan_direct>;
+        transform = <&default_transform>;
+
+        keys
+            //                            w   h    x    y     rot    rx    ry
+            // Num row
+            = <&key_physical_attrs 100 100  200    0       0     0     0>
+            , <&key_physical_attrs 100 100  306   33       0     0     0>
+            , <&key_physical_attrs 100 100  406    0       0     0     0>
+            , <&key_physical_attrs 100 100  506   33       0     0     0>
+            , <&key_physical_attrs 100 100  606   48       0     0     0>
+            , <&key_physical_attrs 100 100  706   48       0     0     0>
+            , <&key_physical_attrs 100 100 1008   48       0     0     0>
+            , <&key_physical_attrs 100 100 1108   48       0     0     0>
+            , <&key_physical_attrs 100 100 1208   33       0     0     0>
+            , <&key_physical_attrs 100 100 1308    0       0     0     0>
+            , <&key_physical_attrs 100 100 1408   33       0     0     0>
+            , <&key_physical_attrs 100 100 1514    0       0     0     0>
+            // Top row
+            , <&key_physical_attrs 100 100  200  100       0     0     0>
+            , <&key_physical_attrs 100 100  306  133       0     0     0>
+            , <&key_physical_attrs 100 100  406  100       0     0     0>
+            , <&key_physical_attrs 100 100  506  133       0     0     0>
+            , <&key_physical_attrs 100 100  606  148       0     0     0>
+            , <&key_physical_attrs 100 100  706  148       0     0     0>
+            , <&key_physical_attrs 100 100 1008  148       0     0     0>
+            , <&key_physical_attrs 100 100 1108  148       0     0     0>
+            , <&key_physical_attrs 100 100 1208  133       0     0     0>
+            , <&key_physical_attrs 100 100 1308  100       0     0     0>
+            , <&key_physical_attrs 100 100 1408  133       0     0     0>
+            , <&key_physical_attrs 100 100 1514  100       0     0     0>
+            // Home row
+            , <&key_physical_attrs 100 100  200  200       0     0     0>
+            , <&key_physical_attrs 100 100  306  233       0     0     0>
+            , <&key_physical_attrs 100 100  406  200       0     0     0>
+            , <&key_physical_attrs 100 100  506  233       0     0     0>
+            , <&key_physical_attrs 100 100  606  248       0     0     0>
+            , <&key_physical_attrs 100 100  706  248       0     0     0>
+            , <&key_physical_attrs 100 100 1008  248       0     0     0>
+            , <&key_physical_attrs 100 100 1108  248       0     0     0>
+            , <&key_physical_attrs 100 100 1208  233       0     0     0>
+            , <&key_physical_attrs 100 100 1308  200       0     0     0>
+            , <&key_physical_attrs 100 100 1408  233       0     0     0>
+            , <&key_physical_attrs 100 100 1514  200       0     0     0>
+            // Bottom row
+            , <&key_physical_attrs 100 100  200  300       0     0     0>
+            , <&key_physical_attrs 100 100  306  333       0     0     0>
+            , <&key_physical_attrs 100 100  406  300       0     0     0>
+            , <&key_physical_attrs 100 100  506  333       0     0     0>
+            , <&key_physical_attrs 100 100  606  348       0     0     0>
+            , <&key_physical_attrs 100 100  706  348       0     0     0>
+            , <&key_physical_attrs 100 100 1008  348       0     0     0>
+            , <&key_physical_attrs 100 100 1108  348       0     0     0>
+            , <&key_physical_attrs 100 100 1208  333       0     0     0>
+            , <&key_physical_attrs 100 100 1308  300       0     0     0>
+            , <&key_physical_attrs 100 100 1408  333       0     0     0>
+            , <&key_physical_attrs 100 100 1514  300       0     0     0>
+            // Mod row + thumb cluster
+            , <&key_physical_attrs 100 100  506  433       0     0     0>
+            , <&key_physical_attrs 100 100  606  448       0     0     0>
+            , <&key_physical_attrs 150 100  712  520    1500   787   570>
+            , <&key_physical_attrs 150 100 1027  520 (-1500)  1102   570>
+            , <&key_physical_attrs 100 100 1108  448       0     0     0>
+            , <&key_physical_attrs 100 100 1208  433       0     0     0>
+            ;
+    };
+};

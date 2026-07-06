@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT
+
+config BOARD_HYPOTHENAR
+    bool "Hypothenar (MS88SF3 nRF52840 module)"
+    depends on SOC_NRF52840_QIAA

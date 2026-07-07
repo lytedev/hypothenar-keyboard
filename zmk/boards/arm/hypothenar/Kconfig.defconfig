@@ -5,18 +5,16 @@ if BOARD_HYPOTHENAR
 config BOARD
     default "hypothenar"
 
-config ZMK_BLE
-    default y
+# ZMK_USB / ZMK_BLE are deliberately NOT defaulted here: ZMK's own
+# role-aware defaults enable USB HID only on the central half.
+# Forcing ZMK_USB=y board-wide makes the peripheral link against
+# central-only HID report code and fails.
 
-config ZMK_USB
-    default y
-
-# Bluetooth-only is a battery saver - USB transport stays available
-# for keymap flashing but the radio is the primary path.
+# On-chip BLE controller (same pattern as upstream nice_nano). Without
+# this the build falls back to the H4 UART HCI transport and fails on
+# the missing zephyr,bt-uart chosen. NOTE: do not add a default for
+# BT_LL_SW_SPLIT - it is a choice symbol and Kconfig aborts on it.
 config BT_CTLR
-    default y
-
-config BT_LL_SW_SPLIT
-    default y
+    default BT
 
 endif # BOARD_HYPOTHENAR

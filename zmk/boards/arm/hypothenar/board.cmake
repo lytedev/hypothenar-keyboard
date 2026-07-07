@@ -4,6 +4,10 @@
 # drag-drop over USB mass storage). For SWD recovery use the openocd
 # config in scripts/openocd-picoprobe.cfg.
 
+# The openocd helper infers nrf52 from the board name; 'hypothenar'
+# doesn't contain it, so set the subfamily explicitly.
+set(OPENOCD_NRF5_SUBFAMILY nrf52)
+
 board_runner_args(jlink "--device=nRF52840_xxAA" "--speed=4000")
 include(${ZEPHYR_BASE}/boards/common/openocd-nrf5.board.cmake)
 include(${ZEPHYR_BASE}/boards/common/jlink.board.cmake)

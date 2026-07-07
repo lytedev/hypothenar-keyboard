@@ -5,7 +5,11 @@ manifest:
   projects:
     - name: zmk
       remote: zmkfirmware
-      revision: main
+      # Pin to a stable release, NOT main - see the thenar repo's
+      # bring-up notes: a main snapshot built a 50KB image with no USB
+      # and no BLE, and Zephyr 4.x hardware-model-v2 rejects our legacy
+      # board layout entirely.
+      revision: v0.3.0
       import: app/west.yml
   self:
     # zmk-nix expects the manifest's enclosing directory to be 'config/'

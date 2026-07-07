@@ -54,7 +54,7 @@
             shield = "hypothenar_%PART%";
             # First build fails with a hash mismatch - paste the reported
             # hash here.
-            zephyrDepsHash = pkgs.lib.fakeHash;
+            zephyrDepsHash = "sha256-gsqiTDJLAihVyBXVFlgXwqRmlREcFJctKpl4tEWmVlY=";
           };
 
           firmware-left = pkgs.runCommand "hypothenar-left.uf2" { } ''

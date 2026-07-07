@@ -2,6 +2,16 @@ CONFIG_SOC_SERIES_NRF52X=y
 CONFIG_SOC_NRF52840_QIAA=y
 CONFIG_BOARD_HYPOTHENAR=y
 
+# The MS88SF3 module has NO 32.768kHz crystal (P0.00/P0.01 are exposed
+# as GPIO pads 23/24 in the datasheet) - LFCLK must come from the
+# internal RC oscillator, same as the nice!nano v2. Without this, BLE
+# never starts.
+CONFIG_CLOCK_CONTROL_NRF_K32SRC_RC=y
+CONFIG_CLOCK_CONTROL_NRF_K32SRC_500PPM=y
+
+# Reset button is wired to P0.18 (pad 28) - map it to nRESET.
+CONFIG_GPIO_AS_PINRESET=y
+
 # Enable MPU
 CONFIG_ARM_MPU=y
 
@@ -23,8 +33,12 @@ CONFIG_UART_CONSOLE=y
 # layout - same bootloader, same partition table.
 CONFIG_USE_DT_CODE_PARTITION=y
 
+# Emit zmk.uf2 for the Adafruit bootloader drag-drop/DFU path.
+CONFIG_BUILD_OUTPUT_UF2=y
+
 # Enable USB
 CONFIG_USB_DEVICE_STACK=y
+CONFIG_USB_DEVICE_HID=y
 CONFIG_USB_DEVICE_PRODUCT="Hypothenar"
 CONFIG_USB_DEVICE_VID=0x1d50
 CONFIG_USB_DEVICE_PID=0x615e

@@ -25,7 +25,6 @@
         zephyr,bt-mon-uart = &cdc_acm_uart;
         zephyr,bt-c2h-uart = &cdc_acm_uart;
         zephyr,uart-pipe = &cdc_acm_uart;
-        zephyr,bt-hci = &bt_hci_controller;
         zmk,battery = &vbatt;
     };
 
@@ -33,10 +32,10 @@
     // once the PCB routing pins this to a specific MS88SF3 pad.
     vbatt: vbatt {
         compatible = "zmk,battery-voltage-divider";
-        io-channels = <&adc 7>;
+        io-channels = <&adc 2>;  // AIN2 = P0.04, MS88SF3 pad 16
         output-ohms = <2000000>;
         full-ohms = <(2000000 + 820000)>;
-        power-gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
+        power-gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>;  // P0.05, pad 15
     };
 };
 
@@ -67,7 +66,7 @@
     pinctrl-names = "default", "sleep";
 
     mcp_a: mcp23017@20 {
-        compatible = "microchip,mcp23017";
+        compatible = "microchip,mcp230xx";
         status = "okay";
         reg = <0x20>;
         gpio-controller;
@@ -75,11 +74,11 @@
         ngpios = <16>;
         // RESET is a board-wide net wired to a single MCU GPIO; both
         // expanders share it. The driver pulses it on init.
-        reset-gpios = <&gpio0 15 GPIO_ACTIVE_LOW>;
+        reset-gpios = <&gpio0 31 GPIO_ACTIVE_LOW>;  // I2C_RESET = P0.31, pad 13
     };
 
     mcp_b: mcp23017@21 {
-        compatible = "microchip,mcp23017";
+        compatible = "microchip,mcp230xx";
         status = "okay";
         reg = <0x21>;
         gpio-controller;
@@ -127,8 +126,3 @@ zephyr_udc0: &usbd {
     };
 };
 
-zephyr,user {
-    bt_hci_controller: bt-hci-controller {
-        compatible = "zephyr,bt-hci-ll-sw-split";
-    };
-};

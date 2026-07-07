@@ -1,24 +1,41 @@
 // SPDX-License-Identifier: MIT
 //
-// Pin selections below are STARTING POINTS - they match the placeholder
-// MS88SF3 pad-to-net mapping in v1/ergogen/config.yaml. Update both
-// files together once the datasheet-derived final pad assignments are
-// settled.
-
-#include <nordic/nrf52840_qiaa-pinctrl.dtsi>
+// Pin selections VERIFIED against the Minew MS88SF3 datasheet (rev K).
+// Keep in sync with the pad-to-net table in ergogen/config.yaml:
+//   I2C:  SDA = P0.26 (pad 17), SCL = P0.27 (pad 14)
+//   SPI:  SCK = P0.20 (pad 44), MOSI = P0.17 (pad 41)
+//         (MISO is required by the SPIM binding but unused by the
+//         write-only nice!view - parked on P0.24, pad 46, no net)
 
 &pinctrl {
     i2c0_default: i2c0_default {
         group1 {
-            psels = <NRF_PSEL(TWIM_SDA, 0, 21)>,
-                    <NRF_PSEL(TWIM_SCL, 0, 20)>;
+            psels = <NRF_PSEL(TWIM_SDA, 0, 26)>,
+                    <NRF_PSEL(TWIM_SCL, 0, 27)>;
         };
     };
 
     i2c0_sleep: i2c0_sleep {
         group1 {
-            psels = <NRF_PSEL(TWIM_SDA, 0, 21)>,
-                    <NRF_PSEL(TWIM_SCL, 0, 20)>;
+            psels = <NRF_PSEL(TWIM_SDA, 0, 26)>,
+                    <NRF_PSEL(TWIM_SCL, 0, 27)>;
+            low-power-enable;
+        };
+    };
+
+    spi0_default: spi0_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 20)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 17)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 24)>;
+        };
+    };
+
+    spi0_sleep: spi0_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 20)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 17)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 24)>;
             low-power-enable;
         };
     };

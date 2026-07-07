@@ -14,7 +14,7 @@ config ZMK_SPLIT
     default y
 
 # MCP23017 driver belongs to the Zephyr GPIO subsystem.
-config GPIO_MCP23017
+config GPIO_MCP230XX
     default y
 
 # Enable I2C explicitly so the bus is brought up before the kscan

@@ -57,6 +57,14 @@ Assume 16 h/day awake-and-connected, 8 h/day deep sleep:
 | Central (90 µA idle) | ~1.5 | **~2.5 months** |
 | Pessimistic (110 µA + no deep sleep, 24 h connected) | ~2.6 | **~6 weeks** |
 | Polling fallback (broken interrupts) | ~8–12 | **~9–14 days** |
+| Realistic 8 h/day active use + 15 h deep sleep | ~1.3 | **~2.5–3 months** |
+
+Typing adds surprisingly little: connected-idle already pays the BLE
+keep-alive tax, and active keystrokes only add ~50–150 µA *while
+typing* (~5 µC per radio event at 10–20 events/s — estimate from BLE
+event-charge math; the ZMK power profiler models the same). Battery
+life is governed by **hours connected**, not keystrokes — a real
+workday with aggressive sleep matches the 16 h-connected scenario.
 
 The right half (peripheral) sits in the same band — its BLE peripheral
 link to the central costs about the same as the central's dual role.

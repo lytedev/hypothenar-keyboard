@@ -29,7 +29,7 @@ measurement rather than a datasheet it is marked *(community)*.
 | LDO + MCP23017 ×2 + TP4056 | ~5 µA | as above — these stay powered |
 | **Sleep total** | **~7 µA** | |
 
-Requires `CONFIG_ZMK_SLEEP=y` (not currently set — see Actions).
+Enabled via `CONFIG_ZMK_SLEEP=y` + 15-minute idle timeout in zmk/hypothenar.conf.
 
 ## The term that dominates: switch scanning
 
@@ -88,7 +88,7 @@ no bench equipment.
 ## Actions this analysis produced
 
 - [x] Wire MCP23017 INTA → MCU (P0.30/P0.02) — done
-- [ ] Enable `CONFIG_ZMK_SLEEP=y` (+ idle timeout) in the config
+- [x] Enable `CONFIG_ZMK_SLEEP=y` (+ idle timeout) — zmk/hypothenar.conf
 - [ ] At bring-up: verify encoder rest-state contacts are open
 - [ ] Validate: log BLE-reported battery % over a week of real use
       (upower on the connected host, 15-min samples); slope → real

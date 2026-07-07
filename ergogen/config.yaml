@@ -634,8 +634,9 @@ pcbs:
         params: { side: B, label: R7, from: VCC, to: RESET }     # 100k
       # Charge-indicator LED: VBUS -> R8 (1k) -> D1 anode; cathode into
       # the TP4056's open-drain CHRG pin, which sinks while charging.
-      # NOTE: D1 now faces the bottom of the case - visible through a
-      # light pipe / cutout only.
+      # R8 hides on the bottom with the charge IC; D1 sits on TOP, just
+      # above the scrollwheel where the user can actually see it. (The
+      # one F-side SMD part - hand-solder it or pay for 2-sided PCBA.)
       r8_charge_led:
         what: passive_0603
         where: mcp_b
@@ -643,9 +644,9 @@ pcbs:
         params: { side: B, label: R8, from: VBUS, to: CHG_LED }  # 1k limit
       d1_charge_led:
         what: passive_0603
-        where: mcp_b
-        adjust.shift: [4, -11.3]
-        params: { side: B, label: D1, from: CHG_LED, to: CHARGE_ACTIVE } # 0603 LED
+        where: scrollwheel
+        adjust.shift: [0.7, 10.8]
+        params: { side: F, label: D1, from: CHG_LED, to: CHARGE_ACTIVE } # 0603 LED
 
       # === Battery terminal - two through-hole solder pads for the LiPo
       # leads, left of the slider (between the two MCPs and the display

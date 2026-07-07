@@ -67,8 +67,11 @@ module.exports = {
     A0: { type: 'net', value: 'GND' },  // address pins; tie to GND or VCC
     A1: { type: 'net', value: 'GND' },  // each combination gives unique I2C addr
     A2: { type: 'net', value: 'GND' },  // override per-chip in the ergogen config
-    INTA: { type: 'net', value: 'GND' },  // interrupt outputs, often unused
-    INTB: { type: 'net', value: 'GND' },
+    // Interrupt OUTPUTS - never tie to GND (push-pull by default; a
+    // short when asserted). Wire INTA to an MCU GPIO for wake-on-change
+    // (the chip's MIRROR mode ORs both ports onto INTA); leave INTB NC.
+    INTA: { type: 'net', value: 'INTA_NC' },
+    INTB: { type: 'net', value: 'INTB_NC' },
   },
   body: p => {
     // Helper: generate the 28 pads of a SOIC-28W footprint

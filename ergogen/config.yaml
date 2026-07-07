@@ -385,6 +385,10 @@ pcbs:
           P15: BATT_ADC_EN # P0.05 - divider enable
           # Reset button (nRF nRESET-capable pin, needs GPIO_AS_PINRESET)
           P28: RESET      # P0.18
+          # MCP23017 interrupt lines (wake-on-keychange instead of I2C
+          # polling - the difference between weeks and months of battery)
+          P12: MCP_A_INT  # P0.30
+          P9: MCP_B_INT   # P0.02
           # All other pads default to unconnected
         adjust:
           rotate: 0
@@ -399,6 +403,8 @@ pcbs:
           SCL: I2C_SCL
           SDA: I2C_SDA
           RESET: I2C_RESET
+          INTA: MCP_A_INT   # MIRROR mode ORs both ports onto INTA
+          INTB: MCP1_INTB_NC
           A0: GND       # address 0x20
           A1: GND
           A2: GND
@@ -431,6 +437,8 @@ pcbs:
           SCL: I2C_SCL
           SDA: I2C_SDA
           RESET: I2C_RESET
+          INTA: MCP_B_INT
+          INTB: MCP2_INTB_NC
           A0: VCC       # address 0x21
           A1: GND
           A2: GND

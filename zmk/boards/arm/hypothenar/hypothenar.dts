@@ -75,6 +75,9 @@
         // RESET is a board-wide net wired to a single MCU GPIO; both
         // expanders share it. The driver pulses it on init.
         reset-gpios = <&gpio0 31 GPIO_ACTIVE_LOW>;  // I2C_RESET = P0.31, pad 13
+        // Wake-on-keychange: INTA (MIRROR mode) -> P0.30 (pad 12).
+        // Lets the kscan sleep between keys instead of polling I2C.
+        int-gpios = <&gpio0 30 GPIO_ACTIVE_LOW>;
     };
 
     mcp_b: mcp23017@21 {
@@ -85,6 +88,7 @@
         #gpio-cells = <2>;
         ngpios = <16>;
         // reset-gpios omitted - same net is owned by mcp_a's binding.
+        int-gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;  // INTA -> P0.02 (pad 9)
     };
 };
 

@@ -520,6 +520,119 @@ pcbs:
           GND: GND
           VOUT: VCC
 
+      # === Decoupling capacitors + resistors (0603, JLCPCB Basic tier).
+      # All positions are adjust.shift offsets (mm) from the tagged
+      # zone's point, in that point's frame. Passives keep >=0.8mm to
+      # their IC's pads and >=1mm to the board outline. Layout notes:
+      #   - C1/C2/R3/R4 stack in the strip LEFT of the USB-C, between
+      #     the connector and the board's left bay edge.
+      #   - C3 stands vertically left of the TP4056; R5 sits just above
+      #     it (between charge IC and USB-C underside).
+      #   - C5/C4/C7/D1 stack vertically in the channel between the LDO
+      #     and MCP #1 (x = mcu-38.5).
+      #   - R1/R2/R6/R8 form a row in the strip below the two MCPs,
+      #     above the index-column num keycap.
+      #   - C6/R7 sit below the MS88SF3's bottom pad row (pads 19-31 -
+      #     P31/VDD is bottom-right), far from the antenna (top edge).
+      #   - C8 stands right of MCP #2 at its VDD pin height.
+      c1_vbus_bulk:
+        what: passive_0603
+        where: usb_c
+        adjust.shift: [-8, 2.5]
+        params: { label: C1, from: VBUS, to: GND }   # 4.7uF bulk
+      c2_vbus:
+        what: passive_0603
+        where: usb_c
+        adjust.shift: [-8, 0]
+        params: { label: C2, from: VBUS, to: GND }   # 100nF
+      c3_vbat_charge:
+        what: passive_0603
+        where: charge_ic
+        adjust: { shift: [-5.3, 0], rotate: 90 }
+        params: { label: C3, from: VBAT, to: GND }   # 1uF, TP4056 BAT side
+      c4_vbat_ldo_in:
+        what: passive_0603
+        where: ldo
+        adjust: { shift: [3.5, 3.3], rotate: 90 }
+        params: { label: C4, from: VBAT, to: GND }   # 1uF, LDO input
+      c5_vcc_ldo_out:
+        what: passive_0603
+        where: ldo
+        adjust: { shift: [3.5, 0], rotate: 90 }
+        params: { label: C5, from: VCC, to: GND }    # 1uF, LDO output
+      c6_vdd_mcu:
+        what: passive_0603
+        where: mcu
+        adjust.shift: [3.3, -10.6]
+        params: { label: C6, from: VDD_MCU, to: GND } # 100nF, next to P31
+      c7_vcc_mcp1:
+        what: passive_0603
+        where: mcp_a
+        adjust: { shift: [-6.5, 2.2], rotate: 90 }
+        params: { label: C7, from: VCC, to: GND }    # 100nF
+      c8_vcc_mcp2:
+        what: passive_0603
+        where: mcp_b
+        adjust: { shift: [6.5, 1.9], rotate: 90 }
+        params: { label: C8, from: VCC, to: GND }    # 100nF
+      r1_i2c_scl_pullup:
+        what: passive_0603
+        where: mcp_a
+        adjust.shift: [-3, -10.5]
+        params: { label: R1, from: VCC, to: I2C_SCL }   # 4.7k
+      r2_i2c_sda_pullup:
+        what: passive_0603
+        where: mcp_a
+        adjust.shift: [1, -10.5]
+        params: { label: R2, from: VCC, to: I2C_SDA }   # 4.7k
+      r3_usb_cc1:
+        what: passive_0603
+        where: usb_c
+        adjust.shift: [-8, -2.5]
+        params: { label: R3, from: USB_CC1, to: GND }   # 5.1k UFP pulldown
+      r4_usb_cc2:
+        what: passive_0603
+        where: usb_c
+        adjust.shift: [-8, -5]
+        params: { label: R4, from: USB_CC2, to: GND }   # 5.1k UFP pulldown
+      r5_charge_prog:
+        what: passive_0603
+        where: charge_ic
+        adjust.shift: [0, 3.7]
+        params: { label: R5, from: PROG, to: GND }      # 12k = ~100mA charge
+      r6_i2c_reset_pullup:
+        what: passive_0603
+        where: mcp_b
+        adjust.shift: [-5.5, -10.5]
+        params: { label: R6, from: VCC, to: I2C_RESET } # 100k
+      r7_reset_pullup:
+        what: passive_0603
+        where: mcu
+        adjust.shift: [-0.5, -10.6]
+        params: { label: R7, from: VCC, to: RESET }     # 100k
+      # Charge-indicator LED: VBUS -> R8 (1k) -> D1 anode; cathode into
+      # the TP4056's open-drain CHRG pin, which sinks while charging.
+      r8_charge_led:
+        what: passive_0603
+        where: mcp_b
+        adjust.shift: [-1.5, -10.5]
+        params: { label: R8, from: VBUS, to: CHG_LED }  # 1k limit
+      d1_charge_led:
+        what: passive_0603
+        where: mcp_a
+        adjust: { shift: [-6.5, 5.5], rotate: 90 }
+        params: { label: D1, from: CHG_LED, to: CHARGE_ACTIVE } # 0603 LED
+
+      # === Battery terminal - two through-hole solder pads for the LiPo
+      # leads, in the open bay area left of the slider (below the MCU,
+      # left of the Nice!View column). Battery + goes through the slider
+      # (VBAT_SW) before reaching TP4056/MCU as VBAT.
+      battery:
+        what: battery_pads
+        where: slider
+        adjust.shift: [-15.5, 0]
+        params: { BAT_P: VBAT_SW, BAT_N: GND }
+
       # === Display: Nice!View - vertical strip along the inner (right)
       # board edge, right of the MCU (outside its antenna keepout), with
       # the pin/jumper row at the bottom end.

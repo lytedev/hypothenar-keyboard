@@ -24,7 +24,10 @@ module.exports = {
     VCC: { type: 'net', value: 'VBUS' },
     CE: { type: 'net', value: 'VBUS' },
   },
-  body: p => `
+  body: p => {
+    // Side B is a mirror image (KiCad flip): negate every x coordinate.
+    const fx = p.side == 'B' ? -1 : 1;
+    return `
     (module TP4056_SOP-8 (layer F.Cu) (tedit 0)
     ${p.at}
     (descr "TP4056 LiPo charge IC, SOP-8 package")
@@ -35,21 +38,21 @@ module.exports = {
       (effects (font (size 1 1) (thickness 0.15))))
 
     ${/* SOP-8 pads at 1.27mm pitch, body 5.0x4.0mm, lead-to-lead 6mm */ ''}
-    (pad 1 smd rect (at -2.7 -1.905 ${p.rot}) (size 1.55 0.6)
+    (pad 1 smd rect (at ${-2.7 * fx} -1.905 ${p.rot}) (size 1.55 0.6)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.TEMP.str})
-    (pad 2 smd rect (at -2.7 -0.635 ${p.rot}) (size 1.55 0.6)
+    (pad 2 smd rect (at ${-2.7 * fx} -0.635 ${p.rot}) (size 1.55 0.6)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.PROG.str})
-    (pad 3 smd rect (at -2.7 0.635 ${p.rot}) (size 1.55 0.6)
+    (pad 3 smd rect (at ${-2.7 * fx} 0.635 ${p.rot}) (size 1.55 0.6)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.GND.str})
-    (pad 4 smd rect (at -2.7 1.905 ${p.rot}) (size 1.55 0.6)
+    (pad 4 smd rect (at ${-2.7 * fx} 1.905 ${p.rot}) (size 1.55 0.6)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.VBAT.str})
-    (pad 5 smd rect (at 2.7 1.905 ${p.rot}) (size 1.55 0.6)
+    (pad 5 smd rect (at ${2.7 * fx} 1.905 ${p.rot}) (size 1.55 0.6)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.STDBY.str})
-    (pad 6 smd rect (at 2.7 0.635 ${p.rot}) (size 1.55 0.6)
+    (pad 6 smd rect (at ${2.7 * fx} 0.635 ${p.rot}) (size 1.55 0.6)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.CHRG.str})
-    (pad 7 smd rect (at 2.7 -0.635 ${p.rot}) (size 1.55 0.6)
+    (pad 7 smd rect (at ${2.7 * fx} -0.635 ${p.rot}) (size 1.55 0.6)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.VCC.str})
-    (pad 8 smd rect (at 2.7 -1.905 ${p.rot}) (size 1.55 0.6)
+    (pad 8 smd rect (at ${2.7 * fx} -1.905 ${p.rot}) (size 1.55 0.6)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.CE.str})
 
     ${/* Body outline 5.0 x 4.0 mm */ ''}
@@ -57,8 +60,9 @@ module.exports = {
     (fp_line (start 2.5 -2.0) (end 2.5 2.0) (layer ${p.side}.SilkS) (width 0.12))
     (fp_line (start 2.5 2.0) (end -2.5 2.0) (layer ${p.side}.SilkS) (width 0.12))
     (fp_line (start -2.5 2.0) (end -2.5 -2.0) (layer ${p.side}.SilkS) (width 0.12))
-    ${/* Pin 1 marker (circle, top-left) */ ''}
-    (fp_circle (center -2.7 -2.7) (end -2.6 -2.6) (layer ${p.side}.SilkS) (width 0.15))
+    ${/* Pin 1 marker (circle, next to pin 1) */ ''}
+    (fp_circle (center ${-2.7 * fx} -2.7) (end ${-2.6 * fx} -2.6) (layer ${p.side}.SilkS) (width 0.15))
     )
-  `
+  `;
+  }
 }

@@ -74,11 +74,14 @@ module.exports = {
     INTB: { type: 'net', value: 'INTB_NC' },
   },
   body: p => {
+    // Side B is a mirror image (KiCad flip): negate every x coordinate so
+    // the physical part (viewed from the back) has pin 1 in the right place.
+    const fx = p.side == 'B' ? -1 : 1;
     // Helper: generate the 28 pads of a SOIC-28W footprint
     // Pads on each side at 1.27mm pitch, ±3.95mm horizontal from center.
     // Pin 1 is bottom-left, numbering goes counter-clockwise.
     const pad = (n, x, y, net) =>
-      `(pad ${n} smd rect (at ${x} ${y} ${p.rot}) (size 2.0 0.6)
+      `(pad ${n} smd rect (at ${x * fx} ${y} ${p.rot}) (size 2.0 0.6)
         (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${net.str})`;
     // Y coords for the 14 pins on each side, top pin at -8.255, bottom at +8.255
     const ys = Array.from({length: 14}, (_, i) => -8.255 + i * 1.27);
@@ -122,8 +125,8 @@ module.exports = {
       (fp_line (start 3.8 -9.0) (end 3.8 9.0) (layer ${p.side}.SilkS) (width 0.12))
       (fp_line (start 3.8 9.0) (end -3.8 9.0) (layer ${p.side}.SilkS) (width 0.12))
       (fp_line (start -3.8 9.0) (end -3.8 -9.0) (layer ${p.side}.SilkS) (width 0.12))
-      ${/* Pin 1 marker (circle, bottom-left near pin 1) */ ''}
-      (fp_circle (center -4.5 8.255) (end -4.3 8.255) (layer ${p.side}.SilkS) (width 0.15))
+      ${/* Pin 1 marker (circle, next to pin 1 - mirrors to the other flank on side B) */ ''}
+      (fp_circle (center ${-4.5 * fx} 8.255) (end ${-4.3 * fx} 8.255) (layer ${p.side}.SilkS) (width 0.15))
       )
     `;
   }

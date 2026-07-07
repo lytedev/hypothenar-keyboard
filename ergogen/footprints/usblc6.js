@@ -22,7 +22,10 @@ module.exports = {
     GND: { type: 'net', value: 'GND' },
     VBUS: { type: 'net', value: 'VBUS' },
   },
-  body: p => `
+  body: p => {
+    // Side B is a mirror image (KiCad flip): negate every x coordinate.
+    const fx = p.side == 'B' ? -1 : 1;
+    return `
     (module USBLC6-2SC6_SOT-23-6 (layer F.Cu) (tedit 0)
     ${p.at}
     (descr "USBLC6-2SC6 USB ESD protection, SOT-23-6")
@@ -33,17 +36,17 @@ module.exports = {
       (effects (font (size 1 1) (thickness 0.15))))
 
     ${/* SOT-23-6: three pads each side at 0.95mm pitch, ±1.1mm from center */ ''}
-    (pad 1 smd rect (at -1.1 -0.95 ${p.rot}) (size 0.6 1.2)
+    (pad 1 smd rect (at ${-1.1 * fx} -0.95 ${p.rot}) (size 0.6 1.2)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.DP.str})
-    (pad 2 smd rect (at -1.1 0 ${p.rot}) (size 0.6 1.2)
+    (pad 2 smd rect (at ${-1.1 * fx} 0 ${p.rot}) (size 0.6 1.2)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.GND.str})
-    (pad 3 smd rect (at -1.1 0.95 ${p.rot}) (size 0.6 1.2)
+    (pad 3 smd rect (at ${-1.1 * fx} 0.95 ${p.rot}) (size 0.6 1.2)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.DM.str})
-    (pad 4 smd rect (at 1.1 0.95 ${p.rot}) (size 0.6 1.2)
+    (pad 4 smd rect (at ${1.1 * fx} 0.95 ${p.rot}) (size 0.6 1.2)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.DM.str})
-    (pad 5 smd rect (at 1.1 0 ${p.rot}) (size 0.6 1.2)
+    (pad 5 smd rect (at ${1.1 * fx} 0 ${p.rot}) (size 0.6 1.2)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.VBUS.str})
-    (pad 6 smd rect (at 1.1 -0.95 ${p.rot}) (size 0.6 1.2)
+    (pad 6 smd rect (at ${1.1 * fx} -0.95 ${p.rot}) (size 0.6 1.2)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.DP.str})
 
     ${/* Body outline 2.9 x 1.6 mm */ ''}
@@ -51,7 +54,8 @@ module.exports = {
     (fp_line (start 1.45 -0.8) (end 1.45 0.8) (layer ${p.side}.SilkS) (width 0.12))
     (fp_line (start 1.45 0.8) (end -1.45 0.8) (layer ${p.side}.SilkS) (width 0.12))
     (fp_line (start -1.45 0.8) (end -1.45 -0.8) (layer ${p.side}.SilkS) (width 0.12))
-    (fp_circle (center -1.6 -1.2) (end -1.5 -1.1) (layer ${p.side}.SilkS) (width 0.15))
+    (fp_circle (center ${-1.6 * fx} -1.2) (end ${-1.5 * fx} -1.1) (layer ${p.side}.SilkS) (width 0.15))
     )
-  `
+  `;
+  }
 }

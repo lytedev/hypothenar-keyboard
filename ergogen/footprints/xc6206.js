@@ -11,7 +11,10 @@ module.exports = {
     GND: { type: 'net', value: 'GND' },
     VOUT: { type: 'net', value: 'VCC' },
   },
-  body: p => `
+  body: p => {
+    // Side B is a mirror image (KiCad flip): negate every x coordinate.
+    const fx = p.side == 'B' ? -1 : 1;
+    return `
     (module XC6206_SOT-89-3 (layer F.Cu) (tedit 0)
     ${p.at}
     (descr "XC6206P 3.3V LDO, SOT-89-3 package")
@@ -23,11 +26,11 @@ module.exports = {
 
     ${/* SOT-89-3: three pads on one side (1, 2, 3 left-to-right) plus
         a large heat-sink pad on the other side electrically tied to pad 2 (GND) */ ''}
-    (pad 1 smd rect (at -1.5 -0.95 ${p.rot}) (size 1.0 1.2)
+    (pad 1 smd rect (at ${-1.5 * fx} -0.95 ${p.rot}) (size 1.0 1.2)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.VIN.str})
     (pad 2 smd rect (at 0 -0.95 ${p.rot}) (size 1.0 1.2)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.GND.str})
-    (pad 3 smd rect (at 1.5 -0.95 ${p.rot}) (size 1.0 1.2)
+    (pad 3 smd rect (at ${1.5 * fx} -0.95 ${p.rot}) (size 1.0 1.2)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.VOUT.str})
     (pad 2 smd rect (at 0 1.55 ${p.rot}) (size 1.6 2.0)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.GND.str})
@@ -38,7 +41,8 @@ module.exports = {
     (fp_line (start 2.0 1.25) (end -2.0 1.25) (layer ${p.side}.SilkS) (width 0.12))
     (fp_line (start -2.0 1.25) (end -2.0 -1.25) (layer ${p.side}.SilkS) (width 0.12))
     ${/* Pin 1 marker */ ''}
-    (fp_line (start -2.2 -0.95) (end -2.0 -0.95) (layer ${p.side}.SilkS) (width 0.15))
+    (fp_line (start ${-2.2 * fx} -0.95) (end ${-2.0 * fx} -0.95) (layer ${p.side}.SilkS) (width 0.15))
     )
-  `
+  `;
+  }
 }

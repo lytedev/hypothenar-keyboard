@@ -16,6 +16,12 @@ Notes:
   is responsible for knowing what each pin does (consult the datasheet).
 - The script preserves silkscreen / fab-layer geometry verbatim so the
   output looks the same as the KiCad original.
+- Side awareness: `side: B` doesn't just move copper to the B.* layers -
+  a part mounted on the back is the MIRROR IMAGE of the front placement
+  (KiCad's "flip"), so every x coordinate (pads, silk, fab, courtyard)
+  must be negated. The emitted JS multiplies each x by `fx` (+1 for F,
+  -1 for B) at render time, exactly like the reversible ergogen
+  footprints (e.g. choc.js) hand-mirror their B-side pads.
 """
 
 from __future__ import annotations
@@ -57,6 +63,45 @@ def parse_pads(text: str) -> list[tuple[str, str]]:
             pads.append((m.group(1), block))
         i = j
     return pads
+
+
+NUM = r'[-+]?[0-9.]+'
+
+
+def mirror_pad_coords(sexp: str) -> str:
+    """Template a pad s-expr so x coords (and rotations) mirror for side B.
+
+    (at x y)   -> (at ${x*fx} y ${p.rot})       - pad shape orientation must
+    (at x y r) -> (at ${x*fx} y ${p.rot + r*fx})  track the footprint rotation
+    """
+    def at_repl(m):
+        x, y, r = m.group(1), m.group(2), m.group(3)
+        rot = f"${{p.rot + {r}*fx}}" if r else "${p.rot}"
+        return f"(at ${{{x}*fx}} {y} {rot})"
+    return re.sub(rf'\(at\s+({NUM})\s+({NUM})(?:\s+({NUM}))?\s*\)', at_repl, sexp)
+
+
+def mirror_geom_coords(sexp: str) -> str:
+    """Template a graphic s-expr (fp_line/circle/arc/poly/text) so x coords
+    mirror for side B. Rotations in (at x y r) and arc (angle a) negate."""
+    def at_repl(m):
+        x, y, r = m.group(1), m.group(2), m.group(3)
+        rot = f" ${{{r}*fx}}" if r else ""
+        return f"(at ${{{x}*fx}} {y}{rot})"
+    sexp = re.sub(rf'\(at\s+({NUM})\s+({NUM})(?:\s+({NUM}))?\s*\)', at_repl, sexp)
+    for kw in ('start', 'end', 'center', 'mid', 'xy'):
+        sexp = re.sub(rf'\({kw}\s+({NUM})',
+                      lambda m, kw=kw: f"({kw} ${{{m.group(1)}*fx}}", sexp)
+    sexp = re.sub(rf'\(angle\s+({NUM})\)',
+                  lambda m: f"(angle ${{{m.group(1)}*fx}})", sexp)
+    # fp_text on the back must be mirrored to read correctly (and to avoid
+    # KiCad's nonmirrored_text_on_back_layer DRC warning).
+    if sexp.lstrip().startswith('(fp_text') and 'justify' not in sexp:
+        sexp = re.sub(
+            r'\(effects\s+(\(font[^()]*(?:\([^()]*\)[^()]*)*\))\s*\)',
+            r"(effects \1${p.side == 'B' ? ' (justify mirror)' : ''})",
+            sexp)
+    return sexp
 
 
 def main() -> int:
@@ -107,14 +152,16 @@ def main() -> int:
     out.append(f"      const ident = 'P' + String(padNum).replace(/[^A-Za-z0-9_]/g, '_');")
     out.append(f"      return p[ident] ? p[ident].str : '';")
     out.append(f"    }};")
+    out.append(f"    // Side B is a mirror image (KiCad flip): negate every x coordinate.")
+    out.append(f"    const fx = p.side === 'B' ? -1 : 1;")
     out.append(f"")
     out.append(f"    return `")
     out.append(f"    (module {module_name} (layer F.Cu) (tedit 0)")
     out.append(f"    ${{p.at}}")
     out.append(f"    (fp_text reference \"${{p.ref}}\" (at 0 -12) (layer ${{p.side}}.SilkS) ${{p.ref_hide}}")
-    out.append(f"      (effects (font (size 1 1) (thickness 0.15))))")
+    out.append(f"      (effects (font (size 1 1) (thickness 0.15))${{p.side == 'B' ? ' (justify mirror)' : ''}}))")
     out.append(f"    (fp_text value \"{module_name}\" (at 0 12) (layer ${{p.side}}.Fab) hide")
-    out.append(f"      (effects (font (size 1 1) (thickness 0.15))))")
+    out.append(f"      (effects (font (size 1 1) (thickness 0.15))${{p.side == 'B' ? ' (justify mirror)' : ''}}))")
 
     # ---- emit all pads with net substitution
     for pad_num, pad_sexp in pads:
@@ -134,6 +181,8 @@ def main() -> int:
         # But we DO want our own ${p.side} substitutions to evaluate, so
         # unescape those:
         cleaned = cleaned.replace('\\${p.side}', '${p.side}')
+        # Mirror x (and track footprint rotation) for side B placement.
+        cleaned = mirror_pad_coords(cleaned)
         out.append(f"      {cleaned} ${{padNet(\"{pad_num}\")}})")
 
     # ---- emit non-pad graphics (fp_line, fp_circle, fp_text user, etc.)
@@ -172,6 +221,8 @@ def main() -> int:
         # Escape KiCad's ${REFERENCE} / ${VALUE} placeholders
         block = block.replace('${', '\\${')
         block = block.replace('\\${p.side}', '${p.side}')
+        # Mirror x coordinates for side B placement.
+        block = mirror_geom_coords(block)
         out.append(f"      {block}")
         i = j
 

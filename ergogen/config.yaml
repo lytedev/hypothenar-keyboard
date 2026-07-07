@@ -134,17 +134,16 @@ points:
           row_net: __scroll__
 
     # === MCU module (MS88SF3 nRF52840)
-    # Lives in the electronics bay: a board extension ABOVE the matrix top
-    # edge, near the inner (right) edge. NOTE: ergogen +y is UP; the board
-    # outline's bay rectangle (see outlines.board) is derived from these
-    # positions. The module is oriented with its antenna edge toward the
-    # top board edge (~1.3mm inside Edge.Cuts); the antenna keepout
-    # extends past the edge, and no other component sits within the
-    # module courtyard's keepout strip.
+    # BOTTOM side (B.Cu), tucked between the inner switch column and the
+    # Nice!View strip, standing vertically with its antenna edge toward
+    # the small top lip. NOTE: ergogen +y is UP. The module body top sits
+    # ~1.5mm inside Edge.Cuts (same relationship the bay design used);
+    # the antenna keepout courtyard extends past the edge over air, and
+    # no other component sits inside the on-board keepout strip.
     mcu:
       anchor:
         ref: matrix_inner_num
-        shift: [11.5, 24.5]
+        shift: [13.23, 2.5]
       columns:
         mcu:
           key:
@@ -152,13 +151,17 @@ points:
             width: mcu_width
             height: mcu_height
 
-    # === I/O expanders. Two MCP23017s per half, standing vertically to the
-    # LEFT of the MCU - between it and the key matrix. Clear of the middle
-    # column's top keycap and of the MCU antenna keepout.
+    # === I/O expanders. Two MCP23017s per half, both on the BOTTOM side.
+    # A SOIC-28W (~10 x 19 mm incl. pads) cannot fit inside the key grid
+    # itself: the clear band between hotswap-socket rows is ~7.8mm and the
+    # column channels are ~3.9mm, both smaller than the 9.9mm pad span.
+    # Instead: #1 hides on B.Cu directly under the Nice!View display
+    # (which is F-side-only there), #2 stands in the strip between the
+    # inner column sockets and the battery pads.
     io_expander_1:
       anchor:
-        ref: mcu_mcu
-        shift: [-32, 0]
+        ref: matrix_inner_num
+        shift: [30.43, 18.29]
       columns:
         ic:
           key:
@@ -170,7 +173,7 @@ points:
     io_expander_2:
       anchor:
         ref: io_expander_1_ic
-        shift: [11, 0]
+        shift: [-18, -38]
       columns:
         ic:
           key:
@@ -178,14 +181,15 @@ points:
             width: mcp_width
             height: mcp_height
 
-    # === Power section: USB-C + ESD + charge IC + LDO.
-    # USB-C sits at the top board edge (cable exits away from the user),
-    # left of the MCU antenna keepout; the power chips cluster just below
-    # it, above the middle column's top keycap.
+    # === Power section: USB-C + ESD + charge IC + LDO, all BOTTOM side.
+    # USB-C sits at the small top lip (mouth over the edge, cable exits
+    # away from the user), left of the MCU antenna keepout. The ESD chip
+    # sits on the D+/D- path between USB-C and MCU; TP4056 + LDO cluster
+    # lower, between MCP #2 and the scrollwheel, near the battery pads.
     usb_c:
       anchor:
-        ref: mcu_mcu
-        shift: [-45.5, 5.5]
+        ref: matrix_inner_num
+        shift: [-4.07, 7.99]
       columns:
         usb:
           key:
@@ -194,8 +198,8 @@ points:
             height: usbc_height
     charge_ic:
       anchor:
-        ref: usb_c_usb
-        shift: [-4.5, -10]
+        ref: io_expander_2_ic
+        shift: [0, -15]
       columns:
         ic:
           key:
@@ -215,7 +219,7 @@ points:
     esd:
       anchor:
         ref: usb_c_usb
-        shift: [2, -6.5]
+        shift: [8.3, -5.2]
       columns:
         ic:
           key:
@@ -227,8 +231,8 @@ points:
     # Nice!View column, rotated to run along the edge for case access.
     slider:
       anchor:
-        ref: mcu_mcu
-        shift: [23.5, -33]
+        ref: matrix_inner_num
+        shift: [35, -8.5]
       columns:
         sw:
           key:
@@ -281,16 +285,24 @@ outlines:
           shift: [-0.5px, 0.5py]
         - ref: matrix_middle_num
           shift: [-0.5px, 0.5py]
-        # Electronics bay: extends the board upward from the matrix top
-        # (USB-C + power cluster + MCPs + MCU) and rightward (Nice!View,
-        # slider, reset). Top edge sits ~1.3mm above the USB-C body and
-        # MCU antenna edge; right edge gives 2mm to the display/slider.
-        - ref: matrix_middle_num       # bay top-left, straight up
-          shift: [-0.5px, 0.5py+17.7]
-        - ref: mcu_mcu                 # bay top-right
-          shift: [28, 10.8]
-        - ref: mcu_mcu                 # bay right edge, down past slider+reset
-          shift: [28, -49.2]
+        - ref: matrix_middle_num       # top-right of middle column (organic)
+          shift: [0.5px, 0.5py]
+        # Small electronics lip: with all ICs moved to the bottom side
+        # under/next to the keys, the old full-width bay reduces to a
+        # straight edge over index+inner (covers the USB-C mouth + R3/R4
+        # + the MCU antenna keepout, ~1-4mm proud of the organic edge)...
+        - ref: matrix_index_num        # lip west end
+          shift: [5.93, 10.79]
+        - ref: matrix_inner_num        # lip east end / display-wing corner
+          shift: [21.9, 13.29]
+        # ...plus a 17.6mm-wide wing on the inner edge that supports the
+        # Nice!View display (F side) and hides MCP #1 beneath it (B side).
+        - ref: matrix_inner_num        # wing top-left
+          shift: [21.9, 29.29]
+        - ref: matrix_inner_num        # wing top-right
+          shift: [39.5, 29.29]
+        - ref: matrix_inner_num        # right edge, down past slider+reset
+          shift: [39.5, -24.71]
         - ref: thumbs_space_cluster
           shift: [0.5px, -0.5py]
         - ref: thumbs_space_cluster
@@ -346,6 +358,7 @@ pcbs:
         what: ms88sf3
         where: mcu
         params:
+          side: B         # bottom side; pad x-coords mirror automatically
           # VERIFIED against the Minew MS88SF3 datasheet (rev K, pin
           # description drawing p.6). P<n> = module pad number; the
           # nRF52840 GPIO each pad carries is noted per line. Keep this
@@ -398,6 +411,7 @@ pcbs:
         what: mcp23017
         where: mcp_a
         params:
+          side: B
           VDD: VCC
           VSS: GND
           SCL: I2C_SCL
@@ -432,6 +446,7 @@ pcbs:
         what: mcp23017
         where: mcp_b
         params:
+          side: B
           VDD: VCC
           VSS: GND
           SCL: I2C_SCL
@@ -467,6 +482,7 @@ pcbs:
         what: usb_c
         where: usb_c
         params:
+          side: B
           PA1: GND       # GND
           PA12: GND
           PB1: GND
@@ -492,6 +508,7 @@ pcbs:
         what: usblc6
         where: esd
         params:
+          side: B
           DP: USB_DP
           DM: USB_DM
           GND: GND
@@ -502,6 +519,7 @@ pcbs:
         what: tp4056
         where: charge_ic
         params:
+          side: B
           TEMP: GND
           PROG: PROG       # tie to GND through 12k for 100mA charge
           GND: GND
@@ -516,117 +534,123 @@ pcbs:
         what: xc6206
         where: ldo
         params:
+          side: B
           VIN: VBAT
           GND: GND
           VOUT: VCC
 
       # === Decoupling capacitors + resistors (0603, JLCPCB Basic tier).
-      # All positions are adjust.shift offsets (mm) from the tagged
-      # zone's point, in that point's frame. Passives keep >=0.8mm to
-      # their IC's pads and >=1mm to the board outline. Layout notes:
-      #   - C1/C2/R3/R4 stack in the strip LEFT of the USB-C, between
-      #     the connector and the board's left bay edge.
-      #   - C3 stands vertically left of the TP4056; R5 sits just above
-      #     it (between charge IC and USB-C underside).
-      #   - C5/C4/C7/D1 stack vertically in the channel between the LDO
-      #     and MCP #1 (x = mcu-38.5).
-      #   - R1/R2/R6/R8 form a row in the strip below the two MCPs,
-      #     above the index-column num keycap.
-      #   - C6/R7 sit below the MS88SF3's bottom pad row (pads 19-31 -
-      #     P31/VDD is bottom-right), far from the antenna (top edge).
-      #   - C8 stands right of MCP #2 at its VDD pin height.
+      # All on the BOTTOM side, following their ICs. Positions are
+      # adjust.shift offsets (mm) from the tagged zone's point, in that
+      # point's frame. Passives keep >=0.6mm to their IC's pads, clear
+      # of every hotswap-socket pad / switch hole, and >=1mm to the
+      # board outline. Layout notes:
+      #   - R3/R4 (CC pulldowns) stand left of the USB-C shield holes,
+      #     over the index-column num keycap dead zone.
+      #   - C1/C2 (VBUS) moved next to the TP4056 (its VCC pin) - the
+      #     connector underside now belongs to the inner num keycap.
+      #   - R8/R5/D1 form the row above the TP4056; C3 stands between
+      #     TP4056 and LDO; C4/C5 sit below/above the LDO.
+      #   - C6/R7 sit below the MS88SF3's bottom pad row (P31/VDD is
+      #     bottom-LEFT after the B-side mirror), above MCP #2.
+      #   - C7 stands right of MCP #1 (VDD mirrors to the right flank);
+      #     R1/R2 (I2C pullups) stand between the MCU and MCP #1, just
+      #     below the antenna keepout strip.
+      #   - C8/R6 stack right of MCP #2 at its (mirrored) VDD flank.
       c1_vbus_bulk:
         what: passive_0603
-        where: usb_c
-        adjust.shift: [-8, 2.5]
-        params: { label: C1, from: VBUS, to: GND }   # 4.7uF bulk
+        where: charge_ic
+        adjust: { shift: [-4.9, -1], rotate: 90 }
+        params: { side: B, label: C1, from: VBUS, to: GND }   # 4.7uF bulk
       c2_vbus:
         what: passive_0603
-        where: usb_c
-        adjust.shift: [-8, 0]
-        params: { label: C2, from: VBUS, to: GND }   # 100nF
+        where: charge_ic
+        adjust: { shift: [-4.9, -4.5], rotate: 90 }
+        params: { side: B, label: C2, from: VBUS, to: GND }   # 100nF
       c3_vbat_charge:
         what: passive_0603
         where: charge_ic
-        adjust: { shift: [-5.3, 0], rotate: 90 }
-        params: { label: C3, from: VBAT, to: GND }   # 1uF, TP4056 BAT side
+        adjust: { shift: [4.9, -0.5], rotate: 90 }
+        params: { side: B, label: C3, from: VBAT, to: GND }   # 1uF, TP4056 BAT side
       c4_vbat_ldo_in:
         what: passive_0603
         where: ldo
-        adjust: { shift: [3.5, 3.3], rotate: 90 }
-        params: { label: C4, from: VBAT, to: GND }   # 1uF, LDO input
+        adjust: { shift: [0, -4.8], rotate: 0 }
+        params: { side: B, label: C4, from: VBAT, to: GND }   # 1uF, LDO input
       c5_vcc_ldo_out:
         what: passive_0603
         where: ldo
-        adjust: { shift: [3.5, 0], rotate: 90 }
-        params: { label: C5, from: VCC, to: GND }    # 1uF, LDO output
+        adjust: { shift: [0, 3.7], rotate: 0 }
+        params: { side: B, label: C5, from: VCC, to: GND }    # 1uF, LDO output
       c6_vdd_mcu:
         what: passive_0603
         where: mcu
-        adjust.shift: [3.3, -10.6]
-        params: { label: C6, from: VDD_MCU, to: GND } # 100nF, next to P31
+        adjust.shift: [-4.8, -10.7]
+        params: { side: B, label: C6, from: VDD_MCU, to: GND } # 100nF, next to P31
       c7_vcc_mcp1:
         what: passive_0603
         where: mcp_a
-        adjust: { shift: [-6.5, 2.2], rotate: 90 }
-        params: { label: C7, from: VCC, to: GND }    # 100nF
+        adjust: { shift: [6.5, 1.9], rotate: 90 }
+        params: { side: B, label: C7, from: VCC, to: GND }    # 100nF
       c8_vcc_mcp2:
         what: passive_0603
         where: mcp_b
-        adjust: { shift: [6.5, 1.9], rotate: 90 }
-        params: { label: C8, from: VCC, to: GND }    # 100nF
+        adjust: { shift: [6.3, 1.9], rotate: 90 }
+        params: { side: B, label: C8, from: VCC, to: GND }    # 100nF
       r1_i2c_scl_pullup:
         what: passive_0603
         where: mcp_a
-        adjust.shift: [-3, -10.5]
-        params: { label: R1, from: VCC, to: I2C_SCL }   # 4.7k
+        adjust: { shift: [-7.5, -13], rotate: 90 }
+        params: { side: B, label: R1, from: VCC, to: I2C_SCL }   # 4.7k
       r2_i2c_sda_pullup:
         what: passive_0603
         where: mcp_a
-        adjust.shift: [1, -10.5]
-        params: { label: R2, from: VCC, to: I2C_SDA }   # 4.7k
+        adjust: { shift: [-7.5, -16.5], rotate: 90 }
+        params: { side: B, label: R2, from: VCC, to: I2C_SDA }   # 4.7k
       r3_usb_cc1:
         what: passive_0603
         where: usb_c
-        adjust.shift: [-8, -2.5]
-        params: { label: R3, from: USB_CC1, to: GND }   # 5.1k UFP pulldown
+        adjust: { shift: [-6.1, 3], rotate: 90 }
+        params: { side: B, label: R3, from: USB_CC1, to: GND }   # 5.1k UFP pulldown
       r4_usb_cc2:
         what: passive_0603
         where: usb_c
-        adjust.shift: [-8, -5]
-        params: { label: R4, from: USB_CC2, to: GND }   # 5.1k UFP pulldown
+        adjust: { shift: [-6.1, 0], rotate: 90 }
+        params: { side: B, label: R4, from: USB_CC2, to: GND }   # 5.1k UFP pulldown
       r5_charge_prog:
         what: passive_0603
         where: charge_ic
-        adjust.shift: [0, 3.7]
-        params: { label: R5, from: PROG, to: GND }      # 12k = ~100mA charge
+        adjust.shift: [0.4, 3.7]
+        params: { side: B, label: R5, from: PROG, to: GND }      # 12k = ~100mA charge
       r6_i2c_reset_pullup:
         what: passive_0603
         where: mcp_b
-        adjust.shift: [-5.5, -10.5]
-        params: { label: R6, from: VCC, to: I2C_RESET } # 100k
+        adjust: { shift: [7.3, -3], rotate: 90 }
+        params: { side: B, label: R6, from: VCC, to: I2C_RESET } # 100k
       r7_reset_pullup:
         what: passive_0603
         where: mcu
-        adjust.shift: [-0.5, -10.6]
-        params: { label: R7, from: VCC, to: RESET }     # 100k
+        adjust.shift: [-0.8, -11.2]
+        params: { side: B, label: R7, from: VCC, to: RESET }     # 100k
       # Charge-indicator LED: VBUS -> R8 (1k) -> D1 anode; cathode into
       # the TP4056's open-drain CHRG pin, which sinks while charging.
+      # NOTE: D1 now faces the bottom of the case - visible through a
+      # light pipe / cutout only.
       r8_charge_led:
         what: passive_0603
         where: mcp_b
-        adjust.shift: [-1.5, -10.5]
-        params: { label: R8, from: VBUS, to: CHG_LED }  # 1k limit
+        adjust.shift: [-4, -11.3]
+        params: { side: B, label: R8, from: VBUS, to: CHG_LED }  # 1k limit
       d1_charge_led:
         what: passive_0603
-        where: mcp_a
-        adjust: { shift: [-6.5, 5.5], rotate: 90 }
-        params: { label: D1, from: CHG_LED, to: CHARGE_ACTIVE } # 0603 LED
+        where: mcp_b
+        adjust.shift: [4, -11.3]
+        params: { side: B, label: D1, from: CHG_LED, to: CHARGE_ACTIVE } # 0603 LED
 
       # === Battery terminal - two through-hole solder pads for the LiPo
-      # leads, in the open bay area left of the slider (below the MCU,
-      # left of the Nice!View column). Battery + goes through the slider
-      # (VBAT_SW) before reaching TP4056/MCU as VBAT.
+      # leads, left of the slider (between the two MCPs and the display
+      # header). Battery + goes through the slider (VBAT_SW) before
+      # reaching TP4056/MCU as VBAT.
       battery:
         what: battery_pads
         where: slider
@@ -634,13 +658,15 @@ pcbs:
         params: { BAT_P: VBAT_SW, BAT_N: GND }
 
       # === Display: Nice!View - vertical strip along the inner (right)
-      # board edge, right of the MCU (outside its antenna keepout), with
-      # the pin/jumper row at the bottom end.
+      # board edge on the display wing, with the pin row at the bottom
+      # end. It stays on the FRONT; MCP #1 hides underneath it on the
+      # bottom side. Its rounded top overhangs the wing edge by ~4.5mm
+      # (it sits ~7mm above the PCB on its header, so this is air).
       niceview:
         what: display_nice_view
         where: mcu
         adjust:
-          shift: [19, -8.7]
+          shift: [17.27, 13.3]
           rotate: 0
         params:
           side: F

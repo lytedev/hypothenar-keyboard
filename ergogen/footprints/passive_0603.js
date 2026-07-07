@@ -18,7 +18,12 @@ module.exports = {
     from: { type: 'net', value: 'GND' },
     to: { type: 'net', value: 'GND' },
   },
-  body: p => `
+  body: p => {
+    // Side B is a mirror image (KiCad flip): negate pad x so `from`/`to`
+    // (pad 1 / pad 2 - polarity for LEDs) land where the physical part
+    // expects them when mounted on the back.
+    const fx = p.side == 'B' ? -1 : 1;
+    return `
     (module passive_0603 (layer F.Cu) (tedit 0)
     ${p.at}
     (descr "Generic 0603 two-pad passive (resistor/capacitor/LED)")
@@ -28,17 +33,18 @@ module.exports = {
     (fp_text value "${p.label}" (at 0 1.3) (layer ${p.side}.Fab) hide
       (effects (font (size 0.7 0.7) (thickness 0.1))))
     (fp_text user "${p.label}" (at 0 -1.2) (layer ${p.side}.SilkS)
-      (effects (font (size 0.5 0.5) (thickness 0.09))))
+      (effects (font (size 0.5 0.5) (thickness 0.09))${p.side == 'B' ? ' (justify mirror)' : ''}))
 
     ${/* 0603 land pattern: 0.9 x 0.95 mm pads at +/-0.775 mm */ ''}
-    (pad 1 smd rect (at -0.775 0 ${p.rot}) (size 0.9 0.95)
+    (pad 1 smd rect (at ${-0.775 * fx} 0 ${p.rot}) (size 0.9 0.95)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.from.str})
-    (pad 2 smd rect (at 0.775 0 ${p.rot}) (size 0.9 0.95)
+    (pad 2 smd rect (at ${0.775 * fx} 0 ${p.rot}) (size 0.9 0.95)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.to.str})
 
     ${/* Body outline hints above/below the pads */ ''}
     (fp_line (start -0.8 -0.6) (end 0.8 -0.6) (layer ${p.side}.SilkS) (width 0.1))
     (fp_line (start -0.8 0.6) (end 0.8 0.6) (layer ${p.side}.SilkS) (width 0.1))
     )
-  `
+  `;
+  }
 }

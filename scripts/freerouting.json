@@ -1,0 +1,25 @@
+{
+  "profile": {
+    "id": "00000000-0000-4000-8000-000000000000",
+    "email": "",
+    "allow_telemetry": false,
+    "allow_contact": false
+  },
+  "router": {
+    "scoring": {
+      "via_costs": 10,
+      "plane_via_costs": 10,
+      "start_ripup_costs": 50,
+      "unrouted_net_penalty": 1000,
+      "bend_penalty": 1,
+      "clearance_violation_penalty": 50
+    }
+  },
+  "usage_and_diagnostic_data": {
+    "disable_analytics": true
+  },
+  "feature_flags": {
+    "multi_threading": false
+  },
+  "version": "2.2.4"
+}

@@ -17,12 +17,30 @@
     {
       packages = forAllSystems (pkgs:
         let
+          # Python wrapper that can `import pcbnew` (same trick as the
+          # thenar repo): expose KiCad's bundled python module to a
+          # vanilla interpreter.
+          kicadPython = pkgs.writeShellScriptBin "kicad-python" ''
+            export PYTHONPATH="${pkgs.kicad.base}/lib/python3.13/site-packages''${PYTHONPATH:+:$PYTHONPATH}"
+            exec ${pkgs.python313}/bin/python3 "$@"
+          '';
+
+          # freerouting v2.2.4 fetched directly - nixpkgs' 2.2.1 has a
+          # multithreaded race that NPEs on our DSNs (thenar lesson).
+          freeroutingJar = pkgs.fetchurl {
+            url = "https://github.com/freerouting/freerouting/releases/download/v2.2.4/freerouting-2.2.4.jar";
+            hash = "sha256-9e03QYKQDMx45HNRi7ufa4afSgcVlJX2Y6dvUrsQUjs=";
+          };
+          freerouting = pkgs.writeShellScriptBin "freerouting" ''
+            exec ${pkgs.temurin-jre-bin-25}/bin/java -jar ${freeroutingJar} "$@"
+          '';
+
           # Ergogen scaffold + KiCad project file. NOT FAB-READY: footprints
           # and nets but no copper. Route per docs/build-recipe.md.
           scaffold = pkgs.stdenvNoCC.mkDerivation {
             name = "hypothenar-scaffold";
             src = ./.;
-            nativeBuildInputs = [ pkgs.ergogen pkgs.python313 pkgs.kicad ];
+            nativeBuildInputs = [ pkgs.ergogen pkgs.python313 pkgs.kicad kicadPython ];
             buildPhase = ''
               runHook preBuild
               export HOME=$(mktemp -d)
@@ -30,6 +48,32 @@
               ergogen ./ergogen -o $out
               kicad-cli pcb upgrade $out/pcbs/keyboard.kicad_pcb
               python3 ./scripts/write_kicad_pro.py $out/pcbs/keyboard.kicad_pcb
+              # F.Cu + B.Cu GND zones (unfilled; gerber export fills them)
+              kicad-python ./scripts/patch_keyboard_pcb.py $out/pcbs/keyboard.kicad_pcb
+              runHook postBuild
+            '';
+            dontInstall = true;
+          };
+
+          # Autoroute the scaffold with freerouting - the heavy lifting
+          # before hand-finishing in KiCad (rc1-proven hybrid flow).
+          # NOT consumed by any fab output automatically: inspect, then
+          # copy into routed/ as your hand-finishing starting point:
+          #   nix build .#routed-auto
+          #   cp result/keyboard.kicad_pcb routed/keyboard-left.kicad_pcb
+          # ~50 passes ≈ 25 min ≈ 90-95% completion.
+          routed-auto = pkgs.stdenvNoCC.mkDerivation {
+            name = "hypothenar-routed-auto";
+            src = ./.;
+            nativeBuildInputs = [ pkgs.kicad kicadPython freerouting ];
+            buildPhase = ''
+              runHook preBuild
+              export HOME=$(mktemp -d)
+              cp ${scaffold}/pcbs/keyboard.kicad_pcb $TMPDIR/in.kicad_pcb
+              chmod u+w $TMPDIR/in.kicad_pcb
+              mkdir -p $out
+              kicad-python ./scripts/autoroute.py \
+                $TMPDIR/in.kicad_pcb $out/keyboard.kicad_pcb 50
               runHook postBuild
             '';
             dontInstall = true;
@@ -131,7 +175,8 @@
           };
         in
         {
-          inherit scaffold firmware firmware-left firmware-right flash pcba;
+          inherit scaffold routed-auto kicadPython freerouting
+                  firmware firmware-left firmware-right flash pcba;
           default = scaffold;
         });
 

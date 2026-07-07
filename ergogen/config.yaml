@@ -20,8 +20,8 @@ units:
   # MCU module: MS88SF3 is 12.5 x 18.5 mm (kleeb footprint extents)
   mcu_width: 13
   mcu_height: 19
-  # I/O expander: MCP23017 in SOIC-28W is ~7.5 x 18 mm
-  mcp_width: 8
+  # I/O expander: MCP23017 in SOIC-28W is ~10 x 18 mm including pads
+  mcp_width: 10
   mcp_height: 19
   # USB-C: ~9 x 7.5 mm
   usbc_width: 10
@@ -134,13 +134,17 @@ points:
           row_net: __scroll__
 
     # === MCU module (MS88SF3 nRF52840)
-    # Placed to the right of the matrix in the same general area Nice!Nano
-    # sat in rc1, but as a single discrete component rather than a module
-    # plus daughter board.
+    # Lives in the electronics bay: a board extension ABOVE the matrix top
+    # edge, near the inner (right) edge. NOTE: ergogen +y is UP; the board
+    # outline's bay rectangle (see outlines.board) is derived from these
+    # positions. The module is oriented with its antenna edge toward the
+    # top board edge (~1.3mm inside Edge.Cuts); the antenna keepout
+    # extends past the edge, and no other component sits within the
+    # module courtyard's keepout strip.
     mcu:
       anchor:
         ref: matrix_inner_num
-        shift: [kx+mcu_padding+mcu_width/2, -mcu_height/2]
+        shift: [11.5, 24.5]
       columns:
         mcu:
           key:
@@ -148,12 +152,13 @@ points:
             width: mcu_width
             height: mcu_height
 
-    # === I/O expanders. Two MCP23017s per half, placed below the MCU.
-    # We expect to refine positions in KiCad once the keepout areas are clear.
+    # === I/O expanders. Two MCP23017s per half, standing vertically to the
+    # LEFT of the MCU - between it and the key matrix. Clear of the middle
+    # column's top keycap and of the MCU antenna keepout.
     io_expander_1:
       anchor:
         ref: mcu_mcu
-        shift: [0, mcu_height/2 + mcp_height/2 + 3]
+        shift: [-32, 0]
       columns:
         ic:
           key:
@@ -165,7 +170,7 @@ points:
     io_expander_2:
       anchor:
         ref: io_expander_1_ic
-        shift: [mcp_width + 3, 0]
+        shift: [11, 0]
       columns:
         ic:
           key:
@@ -173,12 +178,14 @@ points:
             width: mcp_width
             height: mcp_height
 
-    # === Power section: USB-C + ESD + charge IC + LDO + slider.
-    # Stacked below the I/O expanders.
+    # === Power section: USB-C + ESD + charge IC + LDO.
+    # USB-C sits at the top board edge (cable exits away from the user),
+    # left of the MCU antenna keepout; the power chips cluster just below
+    # it, above the middle column's top keycap.
     usb_c:
       anchor:
-        ref: io_expander_1_ic
-        shift: [-mcu_width, mcp_height/2 + usbc_height/2 + 3]
+        ref: mcu_mcu
+        shift: [-45.5, 5.5]
       columns:
         usb:
           key:
@@ -188,27 +195,27 @@ points:
     charge_ic:
       anchor:
         ref: usb_c_usb
-        shift: [usbc_width + 4, 0]
+        shift: [-4.5, -10]
       columns:
         ic:
           key:
             tags: [charge_ic]
-            width: 5
-            height: 4
+            width: 7
+            height: 4.5
     ldo:
       anchor:
         ref: charge_ic_ic
-        shift: [7, 0]
+        shift: [8, 0]
       columns:
         ic:
           key:
             tags: [ldo]
-            width: 4
-            height: 2.5
+            width: 4.5
+            height: 4
     esd:
       anchor:
         ref: usb_c_usb
-        shift: [usbc_width/2 + 3, -3]
+        shift: [2, -6.5]
       columns:
         ic:
           key:
@@ -216,27 +223,28 @@ points:
             width: 3
             height: 2
 
-    # === Slider + reset, similar position to rc1
+    # === Slider + reset: on the inner (right) board edge, below the
+    # Nice!View column, rotated to run along the edge for case access.
     slider:
       anchor:
-        ref: charge_ic_ic
-        shift: [0, 5]
+        ref: mcu_mcu
+        shift: [23.5, -33]
       columns:
         sw:
           key:
             tags: [slider]
-            width: 8
-            height: 3
+            width: 5.5
+            height: 8.5
     reset:
       anchor:
         ref: slider_sw
-        shift: [6, 0]
+        shift: [0, -11]
       columns:
         sw:
           key:
             tags: [reset]
             width: 3.5
-            height: 6.5
+            height: 7.5
 
     # === Screw holes (4 corners + thumb area)
     screw_top_left:
@@ -273,17 +281,16 @@ outlines:
           shift: [-0.5px, 0.5py]
         - ref: matrix_middle_num
           shift: [-0.5px, 0.5py]
-        - ref: matrix_middle_num
-          shift: [0.5px, 0.5py]
-        - ref: matrix_inner_num
-          shift: [0.5px, 0.5py]
-        # Wrap right side around MCU + I/O expanders + power
-        - ref: mcu_mcu
-          shift: [mcu_width/2+2, -mcu_height/2-2]
-        - ref: ldo_ic
-          shift: [3, -3]
-        - ref: ldo_ic
-          shift: [3, 5]
+        # Electronics bay: extends the board upward from the matrix top
+        # (USB-C + power cluster + MCPs + MCU) and rightward (Nice!View,
+        # slider, reset). Top edge sits ~1.3mm above the USB-C body and
+        # MCU antenna edge; right edge gives 2mm to the display/slider.
+        - ref: matrix_middle_num       # bay top-left, straight up
+          shift: [-0.5px, 0.5py+17.7]
+        - ref: mcu_mcu                 # bay top-right
+          shift: [28, 10.8]
+        - ref: mcu_mcu                 # bay right edge, down past slider+reset
+          shift: [28, -49.2]
         - ref: thumbs_space_cluster
           shift: [0.5px, -0.5py]
         - ref: thumbs_space_cluster
@@ -339,25 +346,46 @@ pcbs:
         what: ms88sf3
         where: mcu
         params:
-          # Power
-          P1: GND       # placeholder
-          P2: VBAT      # placeholder
-          # USB
-          P14: USB_DP   # placeholder
-          P15: USB_DM   # placeholder
-          # I2C bus (to both MCP23017s)
-          P20: I2C_SCL  # placeholder
-          P21: I2C_SDA  # placeholder
-          # MCP23017 reset
-          P22: I2C_RESET
+          # VERIFIED against the Minew MS88SF3 datasheet (rev K, pin
+          # description drawing p.6). P<n> = module pad number; the
+          # nRF52840 GPIO each pad carries is noted per line. Keep this
+          # table in sync with zmk/boards/arm/hypothenar/ (dts+pinctrl).
+          #
+          # Power. High-voltage mode: LiPo feeds VDDH (pad 32) directly;
+          # VDD (pad 31) is the internal regulator OUTPUT (REGOUT0=3.3V,
+          # set by the nice_nano_v2 bootloader) - decouple it, do NOT
+          # tie it to the LDO 3.3V rail.
+          P1: GND
+          P18: GND
+          P34: GND
+          P31: VDD_MCU    # internal reg output - 1uF decouple to GND only
+          P32: VBAT       # VDDH, 2.5-5.5V battery input
+          # P33 (DCCH) left NC - DC/DC inductors are on-module
+          # USB - dedicated pads, not GPIO
+          P35: VBUS
+          P36: USB_DM     # D-
+          P37: USB_DP     # D+
+          # SWD programming pads (route to the 5-pad header)
+          P49: SWDIO
+          P50: SWCLK
+          # P51 (RF, external antenna) left NC - using the on-module antenna
+          # I2C bus to both MCP23017s
+          P17: I2C_SDA    # P0.26
+          P14: I2C_SCL    # P0.27
+          P13: I2C_RESET  # P0.31
+          # Encoder quadrature (any GPIO works; GPIOTE handles IRQs)
+          P10: ENC_A      # P0.29
+          P11: ENC_B      # P0.28
           # Nice!View SPI
-          P30: SPI_SCK
-          P31: SPI_MOSI
-          P32: NV_CS
-          # Encoder rotation (need IRQ-capable pins)
-          P40: ENC_A
-          P41: ENC_B
-          # All other pads default to unconnected (undefined)
+          P44: SPI_SCK    # P0.20
+          P41: SPI_MOSI   # P0.17
+          P45: NV_CS      # P0.22
+          # Battery voltage divider (AIN2 is the ADC input)
+          P16: BATT_ADC   # P0.04 / AIN2
+          P15: BATT_ADC_EN # P0.05 - divider enable
+          # Reset button (nRF nRESET-capable pin, needs GPIO_AS_PINRESET)
+          P28: RESET      # P0.18
+          # All other pads default to unconnected
         adjust:
           rotate: 0
 
@@ -448,6 +476,8 @@ pcbs:
           PA8: USB_SBU1  # not used for 2.0 - leave or tie GND
           PB8: USB_SBU2
           PSH: GND       # shield tabs to GND
+        adjust:
+          rotate: 180    # mouth faces the top board edge (cable exits up)
 
       # === USB ESD - between USB-C and MCU
       esd:
@@ -482,13 +512,15 @@ pcbs:
           GND: GND
           VOUT: VCC
 
-      # === Display: Nice!View
+      # === Display: Nice!View - vertical strip along the inner (right)
+      # board edge, right of the MCU (outside its antenna keepout), with
+      # the pin/jumper row at the bottom end.
       niceview:
         what: display_nice_view
         where: mcu
         adjust:
-          shift: [25, 0]
-          rotate: 90
+          shift: [19, -8.7]
+          rotate: 0
         params:
           side: F
           reversible: false
@@ -510,21 +542,25 @@ pcbs:
           C: ENC_B
           D: GND
 
-      # === Slider switch (battery cutoff)
+      # === Slider switch (battery cutoff) - long axis along the right edge
       slider:
         what: slider_reversible
         where: slider
         params:
           from: VBAT_SW   # raw battery to slider
           to: VBAT        # output to TP4056 / MCU when on
+        adjust:
+          rotate: 90
 
-      # === Reset button
+      # === Reset button - long axis along the right edge
       reset_btn:
         what: reset
         where: reset
         params:
           from: GND
           to: RESET       # tied to MCU RESET pin (placeholder)
+        adjust:
+          rotate: 90
 
       # === Screw holes
       screw_holes:

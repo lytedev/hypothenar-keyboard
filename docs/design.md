@@ -211,7 +211,7 @@ ICs were wrong — they pointed at unrelated resistors/ADCs/etc. The
 numbers above are validated against JLCPCB's actual catalogue.
 
 Through-hole / hand-soldered (unchanged from rc1):
-- 28× Kailh Choc hotswap sockets (C2913963)
+- 28× Kailh Choc hotswap sockets (C5333465)
 - 1× EVQWGD001 encoder
 - 1× C128955 slider switch
 - 1× 2-pin tactile reset

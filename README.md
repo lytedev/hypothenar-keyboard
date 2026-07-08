@@ -6,6 +6,13 @@ architectural decisions and BOM rationale.
 
 This directory is a work-in-progress. The PCB hasn't been drawn yet.
 
+## Repositories
+
+- **Primary**: <https://git.lyte.dev/lytedev/hypothenar-keyboard>
+- **Mirror (GitHub)**: <https://github.com/lytedev/hypothenar-keyboard>
+- **Sibling model**: [thenar](https://git.lyte.dev/lytedev/thenar-keyboard) — the hand-solderable original this design derives from ([GitHub mirror](https://github.com/lytedev/thenar-keyboard))
+
+
 ## What's here
 
 - **`ref-designguide-schematic/`** — vendored copy of

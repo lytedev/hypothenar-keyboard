@@ -50,11 +50,18 @@ P28=P0.18, P41=P0.17, P44=P0.20, P45=P0.22). Pads 33=DCCH / 51=RF
 correctly NC. `config.yaml` + `hypothenar.dts` status updated. **Gate
 cleared** — the netlist rests on a correct foundation.
 
-### 2. Add the SWD + debug/expansion breakout header
-Currently `SWDIO`/`SWCLK` are dead-end single-pad nets and there is **no
-programming footprint** — a bare nRF52840 with no SWD is an
-**unprogrammable brick out of the oven.** Combine with the expansion
-breakout you want (the matrix is entirely on the I²C expanders, so most
+### 2. Add the SWD + debug/expansion breakout header ✅ DONE (source)
+`ergogen/footprints/breakout.js` + a `breakout` entry now expose **SWD
+(SWDIO/SWCLK/RST) + power (3V3/GND/VBAT) + all 34 free nRF GPIOs** on a
+2×20 header, auto-wired via net defaults (the 34 free MS88SF3 pads carry
+`GP_*` nets that land on the header). Validated: ergogen regenerates,
+KiCad loads it (J1), each `GP_*` net connects MCU-pad↔header-pad. This
+kills the unprogrammable-brick blocker. **Remaining (yours, in KiCad):**
+the 2×20 header is ~50×5 mm and a placeholder position — **relocate it to
+open board space and trim pads/rows** to what fits ("start Max, shrink").
+Its routing folds into item 3.
+
+Original context (the matrix is entirely on the I²C expanders, so most
 GPIOs are free):
 - **SWD/bring-up (required):** SWDIO, SWCLK, RESET, GND, 3V3 (VDD_MCU).
 - **Power taps:** VBAT, VBUS (optional).

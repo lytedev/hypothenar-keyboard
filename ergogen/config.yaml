@@ -411,9 +411,64 @@ pcbs:
           # polling - the difference between weeks and months of battery)
           P12: MCP_A_INT  # P0.30
           P9: MCP_B_INT   # P0.02
-          # All other pads default to unconnected
+          # === Free GPIOs -> debug/expansion breakout (the matrix is all
+          # on the I2C expanders, so ~34 nRF GPIOs are spare). Each gets a
+          # GP_<port>_<pin> net that also lands on the breakout header
+          # footprint. GPIO<->pad map verified against MS88SF3 rev-K.
+          # Trim in KiCad as board space demands (start Max, shrink).
+          P6:  GP_P0_03   # AIN1 - the one free analog-capable pin
+          P20: GP_P0_07
+          P21: GP_P0_06
+          P23: GP_P0_11
+          P24: GP_P0_01   # LFXO (no module 32k xtal -> usable GPIO)
+          P25: GP_P0_00   # LFXO
+          P27: GP_P0_08
+          P29: GP_P0_16
+          P30: GP_P0_14
+          P38: GP_P0_19
+          P39: GP_P0_13
+          P40: GP_P0_15
+          P42: GP_P0_21
+          P43: GP_P0_23
+          P46: GP_P0_24
+          P48: GP_P0_25
+          P55: GP_P0_09
+          P56: GP_P0_10
+          P2:  GP_P1_11
+          P3:  GP_P1_12
+          P4:  GP_P1_10
+          P5:  GP_P1_14
+          P7:  GP_P1_13
+          P8:  GP_P1_15
+          P22: GP_P1_08
+          P26: GP_P1_09
+          P47: GP_P1_00
+          P52: GP_P1_02
+          P53: GP_P1_04
+          P54: GP_P1_06
+          P57: GP_P1_07
+          P58: GP_P1_05
+          P59: GP_P1_01
+          P60: GP_P1_03
+          # (pads 33=DCCH, 51=RF, 61-64 center = correctly left NC)
         adjust:
           rotate: -8.122  # antenna edge parallel to the sloped board edge
+
+      # === Debug + expansion breakout: SWD + power + all ~34 free GPIOs.
+      # Net-wired via the footprint's defaults (they match the GP_* nets on
+      # the MS88SF3 free pads + SWDIO/SWCLK/RESET/VCC/GND/VBAT), so no
+      # per-net params needed here. PLACEMENT IS A PLACEHOLDER - this 2x20
+      # header is ~50x5mm and almost certainly won't fit as-is; move it
+      # (and/or trim pads/rows in ergogen or KiCad) once you see the layout.
+      # "Start Max, trim to taste."
+      breakout:
+        what: breakout
+        where: mcu
+        adjust:
+          shift: [0, 30]   # PLACEHOLDER - relocate to open board area
+          rotate: 0
+        params:
+          side: F
 
       # === I/O expander #1 - left bank (16 switches)
       mcp1:

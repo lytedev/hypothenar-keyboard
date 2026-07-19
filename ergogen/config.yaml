@@ -7,10 +7,17 @@
 #   - One PCB design per half (no reversibility; v1 emits this config twice
 #     with mirroring for the right half).
 #
-# Status: ANNOTATED STARTER, NOT VALIDATED. Pin assignments to the MS88SF3
-# (P1-P50) are placeholders - verify against the datasheet before fab.
-# Component positions in the MCU/power zone are first-pass guesses; expect
-# to iterate in KiCad once you can see the layout.
+# Status: MS88SF3 PAD MAP VALIDATED (2026-07) against the Minew MS88SF3
+# rev-K datasheet (Datasheet_K_EN, section 3 Pin Description diagram) -
+# every assigned pad (GND 1/18/34, VDD 31, VDDH 32, VBUS 35, D- 36, D+ 37,
+# SWDIO 49, SWCLK 50, and GPIOs P9=P0.02, P10=P0.29, P11=P0.28, P12=P0.30,
+# P13=P0.31, P14=P0.27, P15=P0.05, P16=P0.04/AIN2, P17=P0.26, P28=P0.18,
+# P41=P0.17, P44=P0.20, P45=P0.22) matches the datasheet pad-for-pad.
+# NOTE: pad 33=DCCH (DC/DC out) and 51=RF are correctly left NC (module
+# handles DC/DC + antenna internally); pads 24/25=P0.00/P0.01 are the
+# LFXO pins - the module has no 32.768kHz crystal, so ZMK runs the
+# internal RC (fine for BLE). Component positions in the MCU/power zone
+# are still first-pass; expect to iterate placement in KiCad.
 
 units:
   kx: cx

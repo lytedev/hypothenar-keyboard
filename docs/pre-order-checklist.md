@@ -13,6 +13,8 @@ Derived from the 2026-07 validation pass (netlist ERC cross-read +
 
 ## Done in this pass (source fixes)
 
+- ✅ **MS88SF3 pad map datasheet-verified** (the foundational gate) — all
+  assigned pads correct against Minew rev-K; see item 1 below.
 - ✅ **Battery-sense divider resistors added** — R9 (820k, VBAT→BATT_ADC)
   + R10 (2.0M, BATT_ADC→BATT_ADC_EN), matching the firmware's divider
   (`output-ohms=2.0M`, `full-ohms=2.82M`). `BATT_ADC` was a floating
@@ -38,14 +40,15 @@ Derived from the 2026-07 validation pass (netlist ERC cross-read +
 
 ## 🔴 Blocking requirements — must all be done before ordering
 
-### 1. GATE — datasheet-verify the MS88SF3 pad map *(blocks everything else)*
-`ergogen/config.yaml` self-labels the pad map "NOT VALIDATED." Every net
-above rests on it. Cross-check **every** assigned MS88SF3 pad (P1,P9–P18,
-P28,P31,P32,P34–P37,P41,P44,P45,P49,P50) against the **Minew MS88SF3
-rev-K datasheet** pad→nRF52840-pin drawing. Update `config.yaml` +
-`hypothenar.dts` in lockstep for any correction. *Needs the datasheet —
-provide it and this can be done here.* Until this is signed off, nothing
-downstream is trustworthy.
+### 1. GATE — datasheet-verify the MS88SF3 pad map ✅ DONE (2026-07)
+Cross-checked every assigned pad against the **Minew MS88SF3 rev-K
+datasheet** (Datasheet_K_EN, §3 Pin Description diagram). **All correct,
+pad-for-pad** — GND 1/18/34, VDD 31, VDDH 32, VBUS 35, D- 36, D+ 37,
+SWDIO 49, SWCLK 50, and every GPIO (P9=P0.02, P10=P0.29, P11=P0.28,
+P12=P0.30, P13=P0.31, P14=P0.27, P15=P0.05, P16=P0.04/AIN2, P17=P0.26,
+P28=P0.18, P41=P0.17, P44=P0.20, P45=P0.22). Pads 33=DCCH / 51=RF
+correctly NC. `config.yaml` + `hypothenar.dts` status updated. **Gate
+cleared** — the netlist rests on a correct foundation.
 
 ### 2. Add the SWD + debug/expansion breakout header
 Currently `SWDIO`/`SWCLK` are dead-end single-pad nets and there is **no
@@ -55,13 +58,24 @@ breakout you want (the matrix is entirely on the I²C expanders, so most
 GPIOs are free):
 - **SWD/bring-up (required):** SWDIO, SWCLK, RESET, GND, 3V3 (VDD_MCU).
 - **Power taps:** VBAT, VBUS (optional).
-- **Free GPIO expansion:** break out the unused MS88SF3 GPIO pads. Of 64
-  module pads, ~23 are assigned; the rest are free — but **which free
-  pads are real nRF GPIOs (vs NC/GND) requires the verified pad map
-  (item 1)**, so finalize the GPIO selection *after* the datasheet pass.
+- **Free GPIO expansion:** the pad map is now verified, so here is the
+  full free-GPIO list (unused, real nRF52840 GPIOs). Pick as many as the
+  header size allows:
+  - **P0 free (18):** P0.00·pad25, P0.01·pad24, **P0.03·pad6 (AIN1 — the
+    one free analog-capable pin)**, P0.06·21, P0.07·20, P0.08·27,
+    P0.09·55, P0.10·56, P0.11·23, P0.13·39, P0.14·30, P0.15·40, P0.16·29,
+    P0.19·38, P0.21·42, P0.23·43, P0.24·46, P0.25·48
+  - **P1 free (16):** P1.00·47, P1.01·59, P1.02·52, P1.03·60, P1.04·53,
+    P1.05·58, P1.06·54, P1.07·57, P1.08·22, P1.09·26, P1.10·4, P1.11·2,
+    P1.12·3, P1.13·7, P1.14·5, P1.15·8
+  - ~34 free GPIOs total — the matrix is entirely on the I²C expanders,
+    so the MCU is wide open. Note P0.00/P0.01 (pads 24/25) are the LFXO
+    pins; the module has no 32 kHz crystal (ZMK uses internal RC), so
+    they're usable as GPIO — but if you ever want a real 32 kHz crystal,
+    reserve them.
 - Needs a header/test-pad footprint (model on `battery_pads.js`) + a
-  placement on the board. *Can be implemented here once item 1 fixes the
-  free-pad→GPIO list.*
+  placement on the board. *Can be implemented here — say which/how many
+  free pins to break out and I'll add the footprint + nets.*
 
 ### 3. Finish routing — per half, to a clean DRC
 The left half is a ~95% freerouting **baseline**, not a finished board;

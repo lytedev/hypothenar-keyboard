@@ -5,12 +5,12 @@
 // Pin assignments are keyed off ergogen/config.yaml's MS88SF3 pad map. The
 // nRF52840 GPIOs used below (I2C SDA=P0.26 / SCL=P0.27, I2C_RESET=P0.31,
 // INTA MCP_A=P0.30 / MCP_B=P0.02, BATT_ADC=P0.04 / enable P0.05, encoder
-// A=P0.29 / B=P0.28, SWD, USB) must match the ergogen pad->net assignments
-// pad-for-pad. THE MS88SF3 PAD->nRF52840-PIN MAP IS NOT YET DATASHEET-
-// VERIFIED (config.yaml says so): confirm every pad against the Minew
-// MS88SF3 rev-K datasheet before fabbing, and keep this file and
-// ergogen/config.yaml in lockstep. (The old comment here listed
-// P14=USB_DP/P20=I2C_SCL/etc. - that was stale and WRONG; deleted.)
+// A=P0.29 / B=P0.28, SWD, USB) match the ergogen pad->net assignments
+// pad-for-pad. THE MS88SF3 PAD->nRF52840-PIN MAP IS DATASHEET-VERIFIED
+// (2026-07, Minew MS88SF3 rev-K, section 3 Pin Description) - all GPIOs
+// above confirmed against the pad diagram. Keep this file and
+// ergogen/config.yaml in lockstep on any future change. (The old comment
+// here listed P14=USB_DP/P20=I2C_SCL/etc. - that was stale and WRONG.)
 
 /dts-v1/;
 #include <nordic/nrf52840_qiaa.dtsi>

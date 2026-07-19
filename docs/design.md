@@ -75,7 +75,11 @@ module exposes the nRF52840 GPIO pins as castellated edge pads.
 
 ### I/O expanders: 2× MCP23017 per half
 
-- LCSC: `C9678` (Basic part). 16 GPIOs each, 32 total per half, 28 used
+- LCSC: **CONFLICT — resolve before ordering.** This line says `C9678`
+  (Basic); the PCBA BOM table below says `C47023` (Extended). They
+  disagree on both the part number and the JLC tier (which affects
+  setup-fee cost). Verify the actual in-stock MCP23017-E/SO on LCSC and
+  make both references match. 16 GPIOs each, 32 total per half, 28 used
   for keys + 4 spare.
 - I²C address strap: 3 address pins → 8 possible addresses per bus.
   Use 2 different addresses for the 2 expanders. Both halves use the

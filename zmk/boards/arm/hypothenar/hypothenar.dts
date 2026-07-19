@@ -2,11 +2,15 @@
 //
 // Hypothenar: MS88SF3-nRF52840 module on a custom keyboard PCB.
 //
-// Pin assignments below are STARTING POINTS keyed off v1/ergogen/config.yaml's
-// placeholder MS88SF3 pad assignments (P14=USB_DP, P15=USB_DM, P20=I2C_SCL,
-// P21=I2C_SDA, P22=I2C_RESET). Confirm against the Minew datasheet pad-to-
-// nRF52840-pin map before fabbing the PCB, then update both this file
-// AND v1/ergogen/config.yaml so the routing matches.
+// Pin assignments are keyed off ergogen/config.yaml's MS88SF3 pad map. The
+// nRF52840 GPIOs used below (I2C SDA=P0.26 / SCL=P0.27, I2C_RESET=P0.31,
+// INTA MCP_A=P0.30 / MCP_B=P0.02, BATT_ADC=P0.04 / enable P0.05, encoder
+// A=P0.29 / B=P0.28, SWD, USB) must match the ergogen pad->net assignments
+// pad-for-pad. THE MS88SF3 PAD->nRF52840-PIN MAP IS NOT YET DATASHEET-
+// VERIFIED (config.yaml says so): confirm every pad against the Minew
+// MS88SF3 rev-K datasheet before fabbing, and keep this file and
+// ergogen/config.yaml in lockstep. (The old comment here listed
+// P14=USB_DP/P20=I2C_SCL/etc. - that was stale and WRONG; deleted.)
 
 /dts-v1/;
 #include <nordic/nrf52840_qiaa.dtsi>

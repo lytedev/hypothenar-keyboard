@@ -651,6 +651,28 @@ pcbs:
         adjust.shift: [0.7, 10.8]
         params: { side: F, label: D1, from: CHG_LED, to: CHARGE_ACTIVE } # 0603 LED
 
+      # Battery-sense divider (was MISSING - BATT_ADC floated, so ZMK read
+      # garbage SoC and the interrupt-vs-polling battery validation was
+      # impossible). Values match the firmware's voltage-divider node
+      # (hypothenar.dts: output-ohms=2.0M, full-ohms=2.82M):
+      #   R9 (820k) high side  : VBAT -> BATT_ADC
+      #   R10 (2.0M) low side   : BATT_ADC -> BATT_ADC_EN (returns through
+      #                           the P0.05 enable GPIO, sunk only during a
+      #                           sample - near-zero idle draw)
+      # VERIFY PLACEMENT on regen - shifts are near the MCU decoupling, may
+      # need nudging to clear other footprints (a re-route is required
+      # anyway). Net-correct regardless of the pad map.
+      r9_batt_div_hi:
+        what: passive_0603
+        where: mcu
+        adjust.shift: [-5.0, -9.87]
+        params: { side: B, label: R9, from: VBAT, to: BATT_ADC }   # 820k
+      r10_batt_div_lo:
+        what: passive_0603
+        where: mcu
+        adjust.shift: [-5.0, -8.1]
+        params: { side: B, label: R10, from: BATT_ADC, to: BATT_ADC_EN } # 2.0M
+
       # === Battery terminal - two through-hole solder pads for the LiPo
       # leads, left of the slider (between the two MCPs and the display
       # header). Battery + goes through the slider (VBAT_SW) before

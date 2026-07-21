@@ -36,17 +36,17 @@ module.exports = {
       (effects (font (size 1 1) (thickness 0.15))))
 
     ${/* SOT-23-6: three pads each side at 0.95mm pitch, ±1.1mm from center */ ''}
-    (pad 1 smd rect (at ${-1.1 * fx} -0.95 ${p.rot}) (size 0.6 1.2)
+    (pad 1 smd rect (at ${-1.1 * fx} -0.95 ${p.rot}) (size 1.2 0.6)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.DP.str})
-    (pad 2 smd rect (at ${-1.1 * fx} 0 ${p.rot}) (size 0.6 1.2)
+    (pad 2 smd rect (at ${-1.1 * fx} 0 ${p.rot}) (size 1.2 0.6)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.GND.str})
-    (pad 3 smd rect (at ${-1.1 * fx} 0.95 ${p.rot}) (size 0.6 1.2)
+    (pad 3 smd rect (at ${-1.1 * fx} 0.95 ${p.rot}) (size 1.2 0.6)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.DM.str})
-    (pad 4 smd rect (at ${1.1 * fx} 0.95 ${p.rot}) (size 0.6 1.2)
+    (pad 4 smd rect (at ${1.1 * fx} 0.95 ${p.rot}) (size 1.2 0.6)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.DM.str})
-    (pad 5 smd rect (at ${1.1 * fx} 0 ${p.rot}) (size 0.6 1.2)
+    (pad 5 smd rect (at ${1.1 * fx} 0 ${p.rot}) (size 1.2 0.6)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.VBUS.str})
-    (pad 6 smd rect (at ${1.1 * fx} -0.95 ${p.rot}) (size 0.6 1.2)
+    (pad 6 smd rect (at ${1.1 * fx} -0.95 ${p.rot}) (size 1.2 0.6)
       (layers ${p.side}.Cu ${p.side}.Paste ${p.side}.Mask) ${p.DP.str})
 
     ${/* Body outline 2.9 x 1.6 mm */ ''}

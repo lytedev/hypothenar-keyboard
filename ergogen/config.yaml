@@ -471,7 +471,7 @@ pcbs:
         what: breakout
         where: matrix_outer_bottom
         adjust:
-          shift: [24, -13]   # below the grid, bottom-left open area
+          shift: [24, -21]   # below the grid, clear of the mod-row keys
           rotate: 0
         params:
           side: F
@@ -648,12 +648,12 @@ pcbs:
       r9_batt_div_hi:
         what: passive_0603
         where: mcu
-        adjust.shift: [-5.0, -9.87]
+        adjust.shift: [-14.5, -9.0]
         params: { side: B, label: R9, from: VBAT, to: BATT_ADC }   # 820k
       r10_batt_div_lo:
         what: passive_0603
         where: mcu
-        adjust.shift: [-5.0, -8.1]
+        adjust.shift: [-14.5, -6.4]
         params: { side: B, label: R10, from: BATT_ADC, to: BATT_ADC_EN } # 2.0M
 
       # === Battery terminal - two through-hole solder pads for the LiPo

@@ -74,9 +74,31 @@ module.exports = {
           (pad C thru_hole circle (at ${def_neg}5.625 1.27 ${p.rot}) (size 1.6 1.6) (drill 0.9) (layers *.Cu *.Mask) ${p.C.str})
           (pad D thru_hole circle (at ${def_neg}5.625 3.81 ${p.rot}) (size 1.6 1.6) (drill 0.9) (layers *.Cu *.Mask) ${p.D.str})
 
-          ${'' /* mirror pins */}  
-          (pad S1 thru_hole circle (at ${def_neg}6.85 6.2 ${p.rot}) (size 1.6 1.6) (drill 0.9) (layers *.Cu *.Mask) ${p.from.str})
-          (pad S2 thru_hole circle (at ${def_neg}5 6.2 ${p.rot}) (size 1.6 1.6) (drill 0.9) (layers *.Cu *.Mask) ${p.to.str})
+          ${'' /* EVQWGD001 plastic locating peg (NPTH), 2026-07.
+                 Position is authoritative - taken from
+                 lib/kleeb/switch.pretty/EVQWGD001.kicad_mod, whose pad
+                 coords match ours exactly. The peg sits on the OPPOSITE
+                 end of the body from the two button pins.
+
+                 This REPLACES the old duplicate S1/S2 pair that used to
+                 sit at y=+6.2. That pair only existed so ONE reversible
+                 PCB could be populated from either face (the thenar does
+                 this - same board flipped for left/right). The hypothenar
+                 is explicitly NOT reversible (separate left/right PCBs,
+                 see docs/design.md), so the duplicate is dead weight AND
+                 it physically collided with the peg hole (0.63mm apart,
+                 radii summing to 1.2mm).
+
+                 Verified on the built thenar: with the board underside-up
+                 and the number row pointing away, the LEFT half's encoder
+                 solders the pair nearest the number row = y=-6.2 here, so
+                 the peg lands at y=+6.3. Ergogen mirrors the whole board
+                 for the right half, which flips both automatically (pins
+                 below / peg above) - matching the real right half.
+
+                 Previously this peg had to be flush-cut to seat the
+                 encoder; now it drops through and locates the wheel. */}
+          (pad "" np_thru_hole circle (at ${def_neg}5.625 6.3 ${p.rot}) (size 1.5 1.5) (drill 1.5) (layers *.Cu *.Mask))
         `
     }
     if(p.reverse) {

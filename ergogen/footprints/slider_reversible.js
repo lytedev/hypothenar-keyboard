@@ -17,6 +17,14 @@ module.exports = {
                 (fp_text reference "${p.ref}" (at 0 0) (layer F.SilkS) ${p.ref_hide} (effects (font (size 1.27 1.27) (thickness 0.15))))
                 (fp_text value "" (at 0 0) (layer F.SilkS) hide (effects (font (size 1.27 1.27) (thickness 0.15))))
                                 
+                ${'' /* silk label - the reset button had one, this didn't.
+                       Sits below the pin row (pins are at y=2.075) since the
+                       actuator-travel indicator occupies the space above.
+                       Mirrored on B.SilkS so it reads correctly from either
+                       face, same as reset.js does. */}
+                (fp_text user "PWR" (at 0 3.6) (layer F.SilkS) (effects (font (size 1 1) (thickness 0.15))))
+                (fp_text user "PWR" (at 0 3.6) (layer B.SilkS) (effects (font (size 1 1) (thickness 0.15)) (justify mirror)))
+
                 ${'' /* extra indicator for the slider */}
                 (fp_line (start -1.95 -3.85) (end 1.95 -3.85) (layer Dwgs.User) (width 0.15))
                 (fp_line (start 1.95 -3.85) (end 1.95 -1.35) (layer Dwgs.User) (width 0.15))

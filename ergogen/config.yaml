@@ -134,7 +134,12 @@ points:
         scrollwheel:
           key:
             tags: [scrollwheel]
-            shift: [kx+mcu_padding-1.25, 0]
+            # Positioned/angled by hand in KiCad (2026-07) and encoded back
+            # here: nudged ~6.2mm toward the thumb cluster and splayed -15
+            # to match the thumb `layer` key, so the wheel sits naturally
+            # under the thumb instead of square to the grid.
+            shift: [kx+mcu_padding-1.25+0.43, -6.24]
+            rotate: -15
             column_net: GND
             width: scrollwheel_width
             height: scrollwheel_height

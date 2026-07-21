@@ -291,9 +291,9 @@ outlines:
         - ref: matrix_inner_num        # inner top-right corner / slope west end
           shift: [0.5px, 0.5py]
         - ref: matrix_inner_num        # slope east end / top of right edge
-          shift: [39.5, 5.29]
+          shift: [33.5, 5.29]
         - ref: matrix_inner_num        # right edge, down past slider, reset
-          shift: [39.5, -36.71]        # and the side-facing USB-C mouth
+          shift: [33.5, -36.71]        # and the side-facing USB-C mouth
         - ref: thumbs_space_cluster
           shift: [0.5px, -0.5py]
         - ref: thumbs_space_cluster

@@ -59,42 +59,10 @@
     status = "okay";
 };
 
-// I2C bus used for the two MCP23017 expanders. Default to 400 kHz; bump
-// to 1 MHz only after smoke testing.
-&i2c0 {
-    compatible = "nordic,nrf-twi";
-    status = "okay";
-    clock-frequency = <I2C_BITRATE_FAST>;
-    pinctrl-0 = <&i2c0_default>;
-    pinctrl-1 = <&i2c0_sleep>;
-    pinctrl-names = "default", "sleep";
-
-    mcp_a: mcp23017@20 {
-        compatible = "microchip,mcp230xx";
-        status = "okay";
-        reg = <0x20>;
-        gpio-controller;
-        #gpio-cells = <2>;
-        ngpios = <16>;
-        // RESET is a board-wide net wired to a single MCU GPIO; both
-        // expanders share it. The driver pulses it on init.
-        reset-gpios = <&gpio0 31 GPIO_ACTIVE_LOW>;  // I2C_RESET = P0.31, pad 13
-        // Wake-on-keychange: INTA (MIRROR mode) -> P0.30 (pad 12).
-        // Lets the kscan sleep between keys instead of polling I2C.
-        int-gpios = <&gpio0 30 GPIO_ACTIVE_LOW>;
-    };
-
-    mcp_b: mcp23017@21 {
-        compatible = "microchip,mcp230xx";
-        status = "okay";
-        reg = <0x21>;
-        gpio-controller;
-        #gpio-cells = <2>;
-        ngpios = <16>;
-        // reset-gpios omitted - same net is owned by mcp_a's binding.
-        int-gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;  // INTA -> P0.02 (pad 9)
-    };
-};
+// I2C / MCP23017 expanders REMOVED (2026-07): switches now scan as a
+// direct diode matrix off gpio0 (see the shield's hypothenar.dtsi
+// kscan_matrix). P0.26/P0.27/P0.30/P0.31/P0.02 that were the I2C bus +
+// interrupts are now matrix row-sense lines.
 
 &usbd {
     status = "okay";

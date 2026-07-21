@@ -2,15 +2,24 @@
 //
 // Common DT fragment for both halves of Hypothenar.
 //
-// Switch topology (per half, switch-per-pin, no diodes):
+// Switch topology (2026-07): DIODE MATRIX, 6 rows x 6 cols per half,
+// scanned directly by the MS88SF3 (converted from the 2x MCP23017 I2C
+// expanders). diode-direction = col2row, so ZMK makes row-gpios the
+// INPUTS (sensed) and col-gpios the OUTPUTS (driven) - the opposite of
+// the names. Each switch: col driver -> switch -> colrow -> diode ->
+// row sense. Pins (nRF52840, datasheet-verified against MS88SF3 rev-K):
 //
-//   MCP_A bank (16 switches): num row (6) + top row (6) + first 4 of home row
-//   MCP_B bank (16 switches): rest of home (2) + bottom row (6) + mod (2)
-//                             + thumbs (2) + scrollwheel button (1) + 3 spares
+//   rows (sense):  __num__=P0.26 __top__=P0.27 __home__=P0.31
+//                  __bottom__=P0.30 __mod__=P0.02 __thumb__=P0.03
+//   cols (drive):  col0=P0.06 col1=P0.07 col2=P0.08 col3=P0.09
+//                  col4=P0.10 col5=P0.11
 //
-// Each switch is wired one-to-one to a single MCP23017 GPIO pin. Internal
-// pull-ups are enabled via the kscan binding so each switch shorts the
-// pin to GND when pressed.
+// The right half re-uses this kscan with col-offset = 6 (set in its
+// overlay) so its matrix cells land in transform columns 6..11.
+//
+// BRING-UP NOTE: the right half is a mirrored PCB. If its columns read
+// in reverse order, reverse col-gpios in hypothenar_right.overlay (same
+// class of fix the thenar needed). Verify on hardware.
 
 #include <dt-bindings/zmk/matrix_transform.h>
 #include "hypothenar-layouts.dtsi"
@@ -18,42 +27,71 @@
 / {
     chosen {
         zmk,physical-layout = &physical_layout0;
-        zmk,kscan = &kscan_direct;
+        zmk,kscan = &kscan_matrix;
     };
 
-    // Linear position numbering for the keymap. With switch-per-pin we
-    // skip the matrix abstraction entirely - each kscan input maps to a
-    // single keymap position. ZMK position numbers go left-to-right,
-    // top-to-bottom across BOTH halves; on the right half the same
-    // transform is reused but the shield's per-half overlay reorders the
-    // input-gpios list so the wiring still lines up.
+    // 6 rows x 12 cols. Left half = cols 0..5, right half = cols 6..11
+    // (via col-offset 6 on the right overlay). Map is laid out in keymap-
+    // position order (0..55), matching the previous linear numbering:
+    //   num 0-11, top 12-23, home 24-35, bottom 36-47, then the mod row
+    //   (middle+index only) and thumb row interleaved as 48-55.
     default_transform: keymap_transform_0 {
         compatible = "zmk,matrix-transform";
-        rows = <1>;
-        columns = <56>;
+        rows = <6>;
+        columns = <12>;
         map = <
-RC(0,0)  RC(0,1)  RC(0,2)  RC(0,3)  RC(0,4)  RC(0,5)            RC(0,6)  RC(0,7)  RC(0,8)  RC(0,9)  RC(0,10) RC(0,11)
-RC(0,12) RC(0,13) RC(0,14) RC(0,15) RC(0,16) RC(0,17)           RC(0,18) RC(0,19) RC(0,20) RC(0,21) RC(0,22) RC(0,23)
-RC(0,24) RC(0,25) RC(0,26) RC(0,27) RC(0,28) RC(0,29)           RC(0,30) RC(0,31) RC(0,32) RC(0,33) RC(0,34) RC(0,35)
-RC(0,36) RC(0,37) RC(0,38) RC(0,39) RC(0,40) RC(0,41)           RC(0,42) RC(0,43) RC(0,44) RC(0,45) RC(0,46) RC(0,47)
-                              RC(0,48) RC(0,49) RC(0,50) RC(0,51) RC(0,52) RC(0,53) RC(0,54) RC(0,55)
+RC(0,0) RC(0,1) RC(0,2) RC(0,3) RC(0,4) RC(0,5)     RC(0,6) RC(0,7) RC(0,8) RC(0,9) RC(0,10) RC(0,11)
+RC(1,0) RC(1,1) RC(1,2) RC(1,3) RC(1,4) RC(1,5)     RC(1,6) RC(1,7) RC(1,8) RC(1,9) RC(1,10) RC(1,11)
+RC(2,0) RC(2,1) RC(2,2) RC(2,3) RC(2,4) RC(2,5)     RC(2,6) RC(2,7) RC(2,8) RC(2,9) RC(2,10) RC(2,11)
+RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5)     RC(3,6) RC(3,7) RC(3,8) RC(3,9) RC(3,10) RC(3,11)
+                        RC(4,3) RC(4,4) RC(5,3) RC(5,4)     RC(4,9) RC(4,10) RC(5,9) RC(5,10)
         >;
     };
 
-    // EVQWGD001 scrollwheel-mounted encoder. Both halves can mount one;
-    // shield overlay enables whichever side has it physically installed.
+    // Diode matrix. row-gpios = sense (inputs under col2row), col-gpios =
+    // drive (outputs). Same node used by both halves; the right overlay
+    // adds col-offset = 6.
+    kscan_matrix: kscan_matrix {
+        compatible = "zmk,kscan-gpio-matrix";
+        wakeup-source;
+        diode-direction = "col2row";
+        debounce-press-ms = <5>;
+        debounce-release-ms = <5>;
+        row-gpios
+            = <&gpio0 26 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>   // __num__
+            , <&gpio0 27 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>   // __top__
+            , <&gpio0 31 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>   // __home__
+            , <&gpio0 30 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>   // __bottom__
+            , <&gpio0 2  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>   // __mod__
+            , <&gpio0 3  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>   // __thumb__
+            ;
+        col-gpios
+            = <&gpio0 6  GPIO_ACTIVE_HIGH>   // col0
+            , <&gpio0 7  GPIO_ACTIVE_HIGH>   // col1
+            , <&gpio0 8  GPIO_ACTIVE_HIGH>   // col2
+            , <&gpio0 9  GPIO_ACTIVE_HIGH>   // col3
+            , <&gpio0 10 GPIO_ACTIVE_HIGH>   // col4
+            , <&gpio0 11 GPIO_ACTIVE_HIGH>   // col5
+            ;
+    };
+
+    // EVQWGD001 scrollwheel-mounted encoder. Quadrature on MCU GPIOs
+    // (fixed 2026-07: was wrongly on &mcp_b 4/5). A=P0.29, B=P0.28.
+    // NOTE: the encoder push button (ENC_SW -> P0.13) is wired in HW but
+    // not yet scanned (it wasn't in the old kscan either). TODO: add it
+    // via a kscan-composite + a transform position when wanted.
     encoder_left: encoder_left {
         compatible = "alps,ec11";
-        a-gpios = <&mcp_b 4 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-        b-gpios = <&mcp_b 5 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        a-gpios = <&gpio0 29 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        b-gpios = <&gpio0 28 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
         steps = <30>;
         status = "disabled";
     };
 
     encoder_right: encoder_right {
         compatible = "alps,ec11";
-        a-gpios = <&mcp_b 4 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-        b-gpios = <&mcp_b 5 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        a-gpios = <&gpio0 29 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        b-gpios = <&gpio0 28 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
         steps = <30>;
         status = "disabled";
     };
@@ -62,18 +100,5 @@ RC(0,36) RC(0,37) RC(0,38) RC(0,39) RC(0,40) RC(0,41)           RC(0,42) RC(0,43
         compatible = "zmk,keymap-sensors";
         sensors = <&encoder_left &encoder_right>;
         triggers-per-rotation = <15>;
-    };
-};
-
-// Single direct-mode kscan placeholder. The per-half overlay sets
-// input-gpios to the actual list of 28 MCP23017 pin handles ordered by
-// the keymap position those switches map to.
-/ {
-    kscan_direct: kscan_direct {
-        compatible = "zmk,kscan-gpio-direct";
-        wakeup-source;
-        debounce-press-ms = <5>;
-        debounce-release-ms = <5>;
-        // input-gpios is populated by hypothenar_{left,right}.overlay.
     };
 };

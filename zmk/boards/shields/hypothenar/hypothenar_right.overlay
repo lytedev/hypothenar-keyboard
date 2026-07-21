@@ -1,54 +1,22 @@
 // SPDX-License-Identifier: MIT
 //
-// Right half: same MCP23017 pin map as left, but the position numbers
-// in default_transform (positions 6..11, 18..23, etc.) live in the
-// right-side block of the keymap. ZMK's split central + peripheral
-// scheme means each side has its own kscan reporting positions that
-// land in the central's keymap by position number.
+// Right half. Diode matrix (see hypothenar.dtsi) - same wiring as the
+// left, but col-offset 6 lands its cells in transform columns 6..11 so
+// they occupy the right-hand block of the keymap.
 //
-// We re-use the SAME input-gpios ordering as the left overlay - both
-// PCBs are mirrored copies, so the physical wiring is symmetric and
-// the firmware doesn't need to know it's the right side beyond the
-// SHIELD_HYPOTHENAR_RIGHT kconfig flag (which sets central=n).
+// The peripheral's columns auto-offset by the central kscan's 6 columns,
+// so its cells land in transform cols 6..11 (no col-offset property -
+// that isn't valid on this ZMK's kscan-gpio-matrix).
+//
+// BRING-UP: if the right half's columns read reversed (mirrored PCB),
+// reverse col-gpios (override the whole list here). Verify on hardware -
+// the class of bug the thenar hit.
 
 #include "hypothenar.dtsi"
 
 &physical_layout0 {
-    kscan = <&kscan_direct>;
+    kscan = <&kscan_matrix>;
     transform = <&default_transform>;
-};
-
-&kscan_direct {
-    input-gpios
-        = <&mcp_a 8  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 9  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 10 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 12 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 0  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 1  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 2  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 3  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 4  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 5  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 6  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_a 7  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_b 8  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_b 9  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_b 10 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_b 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_b 12 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_b 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_b 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_b 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_b 0  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_b 1  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_b 2  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        , <&mcp_b 3  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-        ;
 };
 
 &encoder_right {

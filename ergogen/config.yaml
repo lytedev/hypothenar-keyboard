@@ -114,6 +114,7 @@ points:
           key:
             splay: -15
             column_net: col3    # diode matrix: __thumb__ row x col3
+            tags: [switch_bottom]   # so it gets a diode (diode_bottom)
         space:
           key:
             width: 1.5kx
@@ -335,17 +336,26 @@ pcbs:
           to: "{{colrow}}"
         adjust:
           rotate: 180
-      diode:
+      # Diodes, placed per switch orientation (ported from the thenar's
+      # proven Choc + ComboDiode shifts). bottom-mounted rows vs top-
+      # mounted rows sit the diode on opposite sides of the socket; the
+      # rotated space thumb gets its own. All bottom-side (single-sided
+      # PnP). Nudge in KiCad if any overlap.
+      diode_bottom:
         what: diode
-        where: [switch, switch_top, switch_bottom, switch_space]
-        params:
-          from: "{{colrow}}"
-          to: "{{row_net}}"
-        adjust:
-          rotate: 180
-          # Diodes on the BOTTOM side with the rest of the SMD (keeps the
-          # PnP single-sided); nudge onto the socket body if needed.
-          shift: [0, 4.7]
+        where: [switch_bottom]
+        params: { from: "{{colrow}}", to: "{{row_net}}" }
+        adjust: { rotate: 0, shift: [0, -9.5] }
+      diode_top:
+        what: diode
+        where: [switch_top]
+        params: { from: "{{colrow}}", to: "{{row_net}}" }
+        adjust: { rotate: 0, shift: [0, 5.2] }
+      diode_space:
+        what: diode
+        where: [switch_space]
+        params: { from: "{{colrow}}", to: "{{row_net}}" }
+        adjust: { rotate: -90, shift: [8.275, 1] }
 
       # === MCU module - MS88SF3
       # MS88SF3 pad numbering is sequential 1..50 around the perimeter of

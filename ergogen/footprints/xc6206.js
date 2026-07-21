@@ -5,7 +5,7 @@
 // Pin 3: Vout (3.3V out)
 module.exports = {
   params: {
-    designator: 'U',
+    designator: 'LDO',
     side: 'F',
     VIN: { type: 'net', value: 'VBAT' },
     GND: { type: 'net', value: 'GND' },

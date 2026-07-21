@@ -1,5 +1,6 @@
 module.exports = {
   params: {
+    designator: "H",
     class: "MP",
     size: 4.0,
     drill: 2.2

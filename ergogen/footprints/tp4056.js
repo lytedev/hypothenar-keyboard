@@ -13,7 +13,7 @@
 // SOP-8 standard footprint, 1.27mm pitch, 5.0 x 4.0 mm package.
 module.exports = {
   params: {
-    designator: 'U',
+    designator: 'CHG',
     side: 'F',
     TEMP: { type: 'net', value: 'GND' },
     PROG: { type: 'net', value: 'PROG' },

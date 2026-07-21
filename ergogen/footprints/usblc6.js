@@ -15,7 +15,7 @@
 // to D-, pin 2 GND, pin 5 VBUS.
 module.exports = {
   params: {
-    designator: 'U',
+    designator: 'ESD',
     side: 'F',
     DP: { type: 'net', value: 'USB_DP' },
     DM: { type: 'net', value: 'USB_DM' },

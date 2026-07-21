@@ -1,5 +1,6 @@
 module.exports = {
     params: {
+      designator: "SW",
       class: "B", // for Button
       side: "F",
       from: undefined,

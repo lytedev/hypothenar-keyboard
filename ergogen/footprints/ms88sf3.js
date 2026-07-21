@@ -5,7 +5,7 @@
 
 module.exports = {
   params: {
-    designator: 'U',
+    designator: 'MCU',
     side: 'F',
     P1: { type: 'net', value: 'P1_NC' },    // pad "1"
     P2: { type: 'net', value: 'P2_NC' },    // pad "2"

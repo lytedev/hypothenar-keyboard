@@ -5,7 +5,7 @@
 
 module.exports = {
   params: {
-    designator: 'U',
+    designator: 'J',
     side: 'F',
     PA1: { type: 'net', value: 'PA1_NC' },    // pad "A1"
     PA4: { type: 'net', value: 'PA4_NC' },    // pad "A4"

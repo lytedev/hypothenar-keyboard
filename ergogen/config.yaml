@@ -464,9 +464,9 @@ pcbs:
       # "Start Max, trim to taste."
       breakout:
         what: breakout
-        where: mcu
+        where: matrix_outer_bottom
         adjust:
-          shift: [0, 30]   # PLACEHOLDER - relocate to open board area
+          shift: [24, -13]   # below the grid, bottom-left open area
           rotate: 0
         params:
           side: F

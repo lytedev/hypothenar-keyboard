@@ -159,7 +159,7 @@ points:
     mcu:
       anchor:
         ref: matrix_inner_num
-        shift: [22.22, 3.16]
+        shift: [22.43, -42.46]
       columns:
         mcu:
           key:
@@ -182,7 +182,7 @@ points:
     usb_c:
       anchor:
         ref: matrix_inner_num
-        shift: [36.93, -29.71]
+        shift: [18.36, 6.42]
       columns:
         usb:
           key:
@@ -191,8 +191,8 @@ points:
             height: usbc_height
     charge_ic:
       anchor:
-        ref: matrix_inner_num   # was io_expander_2_ic (removed); ~same spot
-        shift: [12.43, -34.71]
+        ref: matrix_inner_num
+        shift: [14.43, -12.32]
       columns:
         ic:
           key:
@@ -201,8 +201,8 @@ points:
             height: 4.5
     ldo:
       anchor:
-        ref: charge_ic_ic
-        shift: [8, 0]
+        ref: matrix_inner_num
+        shift: [19.07, -54.46]
       columns:
         ic:
           key:
@@ -211,8 +211,8 @@ points:
             height: 4
     esd:
       anchor:
-        ref: usb_c_usb
-        shift: [-7.5, -3.5]
+        ref: matrix_inner_num
+        shift: [13.93, -17.21]
       columns:
         ic:
           key:
@@ -226,7 +226,7 @@ points:
     slider:
       anchor:
         ref: matrix_inner_num
-        shift: [35, -8.5]
+        shift: [27.58, 1.59]
       columns:
         sw:
           key:
@@ -235,8 +235,8 @@ points:
             height: 8.5
     reset:
       anchor:
-        ref: slider_sw
-        shift: [0, -11]
+        ref: matrix_inner_num
+        shift: [26.43, -7.71]
       columns:
         sw:
           key:
@@ -458,7 +458,7 @@ pcbs:
           P60: GP_P1_03
           # (pads 33=DCCH, 51=RF, 61-64 center = correctly left NC)
         adjust:
-          rotate: -8.122  # antenna edge parallel to the sloped board edge
+          rotate: -99.7   # antenna aimed off-board toward the other half
 
       # === Debug + expansion breakout: SWD + power + all ~34 free GPIOs.
       # Net-wired via the footprint's defaults (they match the GP_* nets on
@@ -471,7 +471,7 @@ pcbs:
         what: breakout
         where: matrix_outer_bottom
         adjust:
-          shift: [24, -21]   # below the grid, clear of the mod-row keys
+          shift: [23.99, -21.0]    # your X; pulled down clear of switch S18
           rotate: 0
         params:
           side: F
@@ -508,7 +508,7 @@ pcbs:
           PB8: USB_SBU2
           PSH: GND       # shield tabs to GND
         adjust:
-          rotate: 90     # mouth faces the inner (right) board edge -
+          rotate: 180     # mouth faces the inner (right) board edge -
                          # cable exits sideways toward the other half
 
       # === USB ESD - between USB-C and MCU
@@ -568,55 +568,55 @@ pcbs:
       c1_vbus_bulk:
         what: passive_0603
         where: charge_ic
-        adjust: { shift: [-4.9, -1], rotate: 90 }
+        adjust: { shift: [-6.90, -23.39], rotate: 90 }
         params: { side: B, label: C1, from: VBUS, to: GND }   # 4.7uF bulk
       c2_vbus:
         what: passive_0603
         where: charge_ic
-        adjust: { shift: [-4.9, -4.5], rotate: 90 }
+        adjust: { shift: [-6.90, -26.89], rotate: 90 }
         params: { side: B, label: C2, from: VBUS, to: GND }   # 100nF
       c3_vbat_charge:
         what: passive_0603
         where: charge_ic
-        adjust: { shift: [4.9, -0.5], rotate: 90 }
+        adjust: { shift: [4.75, -9.89], rotate: 90 }
         params: { side: B, label: C3, from: VBAT, to: GND }   # 1uF, TP4056 BAT side
       c4_vbat_ldo_in:
         what: passive_0603
         where: ldo
-        adjust: { shift: [0, -4.8], rotate: 0 }
+        adjust: { shift: [-4.64, 47.75], rotate: 0 }
         params: { side: B, label: C4, from: VBAT, to: GND }   # 1uF, LDO input
       c5_vcc_ldo_out:
         what: passive_0603
         where: ldo
-        adjust: { shift: [0, 3.7], rotate: 0 }
+        adjust: { shift: [-7.11, 33.75], rotate: 0 }
         params: { side: B, label: C5, from: VCC, to: GND }    # 1uF, LDO output
       c6_vdd_mcu:
         what: passive_0603
         where: mcu
-        adjust.shift: [-7.35, -9.87]
+        adjust.shift: [-20.78, 14.25]
         params: { side: B, label: C6, from: VDD_MCU, to: GND } # 100nF, next to P31
       # C7/C8 (MCP decoupling) + R1/R2 (I2C pull-ups) REMOVED with the
       # expanders (diode-matrix conversion).
       r3_usb_cc1:
         what: passive_0603
         where: usb_c
-        adjust: { shift: [-5.6, 2.5], rotate: 90 }
+        adjust: { shift: [-2.50, -5.60], rotate: 180 }
         params: { side: B, label: R3, from: USB_CC1, to: GND }   # 5.1k UFP pulldown
       r4_usb_cc2:
         what: passive_0603
         where: usb_c
-        adjust: { shift: [-5.6, -0.5], rotate: 90 }
+        adjust: { shift: [0.50, -5.60], rotate: 180 }
         params: { side: B, label: R4, from: USB_CC2, to: GND }   # 5.1k UFP pulldown
       r5_charge_prog:
         what: passive_0603
         where: charge_ic
-        adjust.shift: [0.4, 3.7]
+        adjust.shift: [1.25, -12.89]
         params: { side: B, label: R5, from: PROG, to: GND }      # 12k = ~100mA charge
       # R6 (I2C_RESET pull-up) REMOVED with the expanders.
       r7_reset_pullup:
         what: passive_0603
         where: mcu
-        adjust.shift: [2.15, -11.17]
+        adjust.shift: [-15.22, 15.75]
         params: { side: B, label: R7, from: VCC, to: RESET }     # 100k
       # Charge-indicator LED: VBUS -> R8 (1k) -> D1 anode; cathode into
       # the TP4056's open-drain CHRG pin, which sinks while charging.
@@ -625,13 +625,13 @@ pcbs:
       # one F-side SMD part - hand-solder it or pay for 2-sided PCBA.)
       r8_charge_led:
         what: passive_0603
-        where: charge_ic   # was mcp_b (removed); re-place in KiCad
-        adjust.shift: [-2, 6]
+        where: charge_ic
+        adjust.shift: [-3.00, 20.11]
         params: { side: B, label: R8, from: VBUS, to: CHG_LED }  # 1k limit
       d1_charge_led:
         what: passive_0603
-        where: scrollwheel
-        adjust.shift: [0.7, 10.8]
+        where: charge_ic   # re-anchored off the -15deg scrollwheel frame
+        adjust: { shift: [-5.50, 20.11], rotate: 0 }   # clear of R8 AND the USB-C shield
         params: { side: F, label: D1, from: CHG_LED, to: CHARGE_ACTIVE } # 0603 LED
 
       # Battery-sense divider (was MISSING - BATT_ADC floated, so ZMK read
@@ -648,12 +648,12 @@ pcbs:
       r9_batt_div_hi:
         what: passive_0603
         where: mcu
-        adjust.shift: [-14.5, -9.0]
+        adjust.shift: [-17.75, 14.50]
         params: { side: B, label: R9, from: VBAT, to: BATT_ADC }   # 820k
       r10_batt_div_lo:
         what: passive_0603
         where: mcu
-        adjust.shift: [-14.5, -6.4]
+        adjust.shift: [-18.43, 16.02]
         params: { side: B, label: R10, from: BATT_ADC, to: BATT_ADC_EN } # 2.0M
 
       # === Battery terminal - two through-hole solder pads for the LiPo
@@ -663,7 +663,7 @@ pcbs:
       battery:
         what: battery_pads
         where: slider
-        adjust.shift: [-15.5, 0]
+        adjust.shift: [-33.40, 8.45]
         params: { BAT_P: VBAT_SW, BAT_N: GND }
 
       # === Display: Nice!View - vertical strip along the inner (right)
@@ -708,7 +708,7 @@ pcbs:
           from: VBAT_SW   # raw battery to slider
           to: VBAT        # output to TP4056 / MCU when on
         adjust:
-          rotate: 90
+          rotate: -90
 
       # === Reset button - long axis along the right edge
       reset_btn:

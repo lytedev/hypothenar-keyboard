@@ -115,7 +115,30 @@ the right half isn't routed at all.
   items** is the gate (silk/text warnings are fine; relax copper-to-edge
   to JLC's 0.3 mm min or nudge the 5 offenders).
 
-### 4. Resolve the BOM MCP23017 part number
+### 4. Footprints are hand-solder heritage — adapt them for pick-and-place
+These footprints came from the thenar (hand-soldered, reversible board)
+and haven't been adapted to a single-sided PnP run. Three findings, all
+caught while eyeballing the board in KiCad:
+
+- ✅ **USBLC6 pads were shorted** — 1.2 mm-tall pads on a 0.95 mm pitch
+  overlapped 0.25 mm, merging pins 1-2-3 and 4-5-6 and shorting
+  `USB_DP`/`GND`/`USB_DM`/`VBUS` (a dead VBUS→GND short). Width/height
+  were transposed. **Fixed** → DRC shorts now zero. *(This also explains
+  the 4 "freerouting" shorts we'd misdiagnosed on the routed board.)*
+- ⬜ **Diodes are on the FRONT.** `diode.js` (ComboDiode) has no `side`
+  param and emits pads on **both faces plus through-hole** — great for
+  hand-solder flexibility, wrong for PnP. All 28 land on top, which
+  would force **double-sided assembly** (a real cost adder). Needs a
+  bottom-only SMD variant (drop the F.Cu SMD pads and the THT pads).
+- ⬜ **CPL reports the wrong side for everything.** Footprints hardcode
+  `(module … (layer F.Cu))` even when `side: B` correctly routes their
+  *pads* to `B.Cu` (MS88SF3, TP4056, XC6206, USBLC6, passives). KiCad's
+  CPL export reads the **footprint layer**, so JLC would be told to
+  place bottom-side parts on **top** → mis-assembled board. Fix: make
+  the module layer follow `${p.side}` in the affected footprints, then
+  verify the CPL shows `bottom` for all SMD.
+
+### 5. Resolve the BOM MCP23017 part number
 Verify the in-stock LCSC part (`C9678` vs `C47023`) and tier, make the
 `design.md` body and BOM table agree, and confirm **USBLC6** is a BOM row
 (it's in the netlist but wasn't in the table rows checked).

@@ -2,7 +2,8 @@
 #
 # Architecturally different from rc1:
 #   - Discrete nRF52840 module (MS88SF3) on the PCB, not a Nice!Nano daughter board.
-#   - 2x MCP23017 I/O expanders per half driving the switch matrix via I2C.
+#   - Diode matrix scanned directly by the MS88SF3 (converted from 2x
+#     MCP23017 I/O expanders 2026-07 - the module has plenty of GPIOs).
 #   - Switch-per-pin (each key directly wired to a unique GPIO) - no diodes.
 #   - One PCB design per half (no reversibility; v1 emits this config twice
 #     with mirroring for the right half).
@@ -59,13 +60,13 @@ points:
           rows:
             mod.skip: true
           key:
-            column_net: GND      # one pad of each switch -> GND
+            column_net: col0     # diode matrix: per-column driver net
         pinky:
           rows:
             mod.skip: true
           key:
             origin: [0, 8]
-            column_net: GND
+            column_net: col1
         ring:
           rows:
             mod.skip: true
@@ -73,21 +74,21 @@ points:
             origin: [0, 8]
             stagger: 0.66ky
             splay: -5
-            column_net: GND
+            column_net: col2
         middle:
           key:
             stagger: 0.33ky
-            column_net: GND
+            column_net: col3
         index:
           key:
             stagger: -0.33ky
-            column_net: GND
+            column_net: col4
         inner:
           rows:
             mod.skip: true
           key:
             stagger: -2.5
-            column_net: GND
+            column_net: col5
       rows:
         # The `row_net` ergogen assigns to each row would normally be the
         # column-driver wire. In switch-per-pin we override per-key with
@@ -112,13 +113,13 @@ points:
         layer:
           key:
             splay: -15
-            column_net: GND
+            column_net: col3    # diode matrix: __thumb__ row x col3
         space:
           key:
             width: 1.5kx
             splay: 75
             shift: [13-kx, -3]
-            column_net: GND
+            column_net: col4    # diode matrix: __thumb__ row x col4
             tags: [switch_space]
       rows:
         cluster:
@@ -160,36 +161,11 @@ points:
             width: mcu_width
             height: mcu_height
 
-    # === I/O expanders. Two MCP23017s per half, both on the BOTTOM side.
-    # A SOIC-28W (~10 x 19 mm incl. pads) cannot fit inside the key grid
-    # itself: the clear band between hotswap-socket rows is ~7.8mm and the
-    # column channels are ~3.9mm, both smaller than the 9.9mm pad span.
-    # Instead: #1 hides on B.Cu directly under the Nice!View display
-    # (which is F-side-only there, hovering 7mm up on its header over
-    # the slider/reset stretch of the inner edge), #2 stands in the
-    # strip between the inner column sockets and the battery pads.
-    io_expander_1:
-      anchor:
-        ref: matrix_inner_num
-        shift: [25.43, -21.21]
-      columns:
-        ic:
-          key:
-            # Per-zone tag (not shared) so the pcbs.footprints `where:`
-            # filter can target each expander individually.
-            tags: [mcp_a]
-            width: mcp_width
-            height: mcp_height
-    io_expander_2:
-      anchor:
-        ref: io_expander_1_ic
-        shift: [-13, 1.5]
-      columns:
-        ic:
-          key:
-            tags: [mcp_b]
-            width: mcp_width
-            height: mcp_height
+    # === I/O expanders REMOVED (2026-07): converted to a diode matrix
+    # scanned directly by the MS88SF3 (it has plenty of free GPIOs). No
+    # more MCP23017s / I2C bus - cheaper (Basic diodes vs Extended ICs),
+    # simpler, and no interrupt-vs-polling power risk. Diodes are added in
+    # pcbs.footprints (the `diode` entry) alongside each switch.
 
     # === Power section: USB-C + ESD + charge IC + LDO, all BOTTOM side.
     # USB-C sits on the INNER (right) board edge below the reset button,
@@ -209,8 +185,8 @@ points:
             height: usbc_height
     charge_ic:
       anchor:
-        ref: io_expander_2_ic
-        shift: [0, -15]
+        ref: matrix_inner_num   # was io_expander_2_ic (removed); ~same spot
+        shift: [12.43, -34.71]
       columns:
         ic:
           key:
@@ -342,9 +318,12 @@ pcbs:
   keyboard:
     outlines.main.outline: board
     footprints:
-      # === Switches: each gets a unique `from` net (named after the key's
-      # position) and `to: GND`. That single unique net per switch is what
-      # an MCP23017 GPIO pin will be wired to.
+      # === Switches: DIODE MATRIX. Each switch bridges its column driver
+      # net ({{column_net}} = col0..col5) to a unique per-key {{colrow}}
+      # net; the diode below carries {{colrow}} -> {{row_net}} (the row
+      # sense line), i.e. col2row. Replaces the old switch-per-MCP-pin
+      # scheme (the 2x MCP23017 + I2C are gone - the MS88SF3 has plenty of
+      # GPIOs to scan the matrix directly).
       choc:
         what: choc
         where: [switch, switch_top, switch_bottom, switch_space]
@@ -352,10 +331,21 @@ pcbs:
           keycaps: true
           reverse: true
           hotswap: true
-          from: "sw_{{name}}"   # unique per switch via ergogen's {{name}}
-          to: GND
+          from: "{{column_net}}"
+          to: "{{colrow}}"
         adjust:
           rotate: 180
+      diode:
+        what: diode
+        where: [switch, switch_top, switch_bottom, switch_space]
+        params:
+          from: "{{colrow}}"
+          to: "{{row_net}}"
+        adjust:
+          rotate: 180
+          # Diodes on the BOTTOM side with the rest of the SMD (keeps the
+          # PnP single-sided); nudge onto the socket body if needed.
+          shift: [0, 4.7]
 
       # === MCU module - MS88SF3
       # MS88SF3 pad numbering is sequential 1..50 around the perimeter of
@@ -391,10 +381,10 @@ pcbs:
           P49: SWDIO
           P50: SWCLK
           # P51 (RF, external antenna) left NC - using the on-module antenna
-          # I2C bus to both MCP23017s
-          P17: I2C_SDA    # P0.26
-          P14: I2C_SCL    # P0.27
-          P13: I2C_RESET  # P0.31
+          # Diode-matrix ROW sense lines (were the I2C bus; MCPs removed)
+          P17: __num__    # P0.26
+          P14: __top__    # P0.27
+          P13: __home__   # P0.31
           # Encoder quadrature (any GPIO works; GPIOTE handles IRQs)
           P10: ENC_A      # P0.29
           P11: ENC_B      # P0.28
@@ -407,33 +397,34 @@ pcbs:
           P15: BATT_ADC_EN # P0.05 - divider enable
           # Reset button (nRF nRESET-capable pin, needs GPIO_AS_PINRESET)
           P28: RESET      # P0.18
-          # MCP23017 interrupt lines (wake-on-keychange instead of I2C
-          # polling - the difference between weeks and months of battery)
-          P12: MCP_A_INT  # P0.30
-          P9: MCP_B_INT   # P0.02
-          # === Free GPIOs -> debug/expansion breakout (the matrix is all
-          # on the I2C expanders, so ~34 nRF GPIOs are spare). Each gets a
-          # GP_<port>_<pin> net that also lands on the breakout header
-          # footprint. GPIO<->pad map verified against MS88SF3 rev-K.
-          # Trim in KiCad as board space demands (start Max, shrink).
-          P6:  GP_P0_03   # AIN1 - the one free analog-capable pin
-          P20: GP_P0_07
-          P21: GP_P0_06
-          P23: GP_P0_11
+          # Diode-matrix ROW sense lines (were the MCP INT lines)
+          P12: __bottom__ # P0.30
+          P9:  __mod__    # P0.02
+          # Diode-matrix COLUMN driver lines (6) + the __thumb__ row + the
+          # encoder button. These pins were on the breakout below; the
+          # matrix takes priority, so the breakout has ~26 free GPIOs left.
+          P21: col0       # P0.06
+          P20: col1       # P0.07
+          P27: col2       # P0.08
+          P55: col3       # P0.09
+          P56: col4       # P0.10
+          P23: col5       # P0.11
+          P6:  __thumb__  # P0.03 - thumb-cluster row sense
+          P39: ENC_SW     # P0.13 - encoder push button (was on mcp_b)
+          # === Free GPIOs -> debug/expansion breakout. ~26 nRF GPIOs are
+          # still spare after the matrix. Each gets a GP_<port>_<pin> net
+          # that also lands on the breakout header. GPIO<->pad map verified
+          # against MS88SF3 rev-K. Trim in KiCad as space demands.
           P24: GP_P0_01   # LFXO (no module 32k xtal -> usable GPIO)
           P25: GP_P0_00   # LFXO
-          P27: GP_P0_08
           P29: GP_P0_16
           P30: GP_P0_14
           P38: GP_P0_19
-          P39: GP_P0_13
           P40: GP_P0_15
           P42: GP_P0_21
           P43: GP_P0_23
           P46: GP_P0_24
           P48: GP_P0_25
-          P55: GP_P0_09
-          P56: GP_P0_10
           P2:  GP_P1_11
           P3:  GP_P1_12
           P4:  GP_P1_10
@@ -470,73 +461,10 @@ pcbs:
         params:
           side: F
 
-      # === I/O expander #1 - left bank (16 switches)
-      mcp1:
-        what: mcp23017
-        where: mcp_a
-        params:
-          side: B
-          VDD: VCC
-          VSS: GND
-          SCL: I2C_SCL
-          SDA: I2C_SDA
-          RESET: I2C_RESET
-          INTA: MCP_A_INT   # MIRROR mode ORs both ports onto INTA
-          INTB: MCP1_INTB_NC
-          A0: GND       # address 0x20
-          A1: GND
-          A2: GND
-          # GPB bank (pins 1-8) - num + top rows
-          GPB0: sw_matrix_outer_num
-          GPB1: sw_matrix_pinky_num
-          GPB2: sw_matrix_ring_num
-          GPB3: sw_matrix_middle_num
-          GPB4: sw_matrix_index_num
-          GPB5: sw_matrix_inner_num
-          GPB6: sw_matrix_outer_top
-          GPB7: sw_matrix_pinky_top
-          # GPA bank (pins 21-28) - rest of top + start of home
-          GPA0: sw_matrix_ring_top
-          GPA1: sw_matrix_middle_top
-          GPA2: sw_matrix_index_top
-          GPA3: sw_matrix_inner_top
-          GPA4: sw_matrix_outer_home
-          GPA5: sw_matrix_pinky_home
-          GPA6: sw_matrix_ring_home
-          GPA7: sw_matrix_middle_home
-
-      # === I/O expander #2 - right bank (remaining 12 switches + spares)
-      mcp2:
-        what: mcp23017
-        where: mcp_b
-        params:
-          side: B
-          VDD: VCC
-          VSS: GND
-          SCL: I2C_SCL
-          SDA: I2C_SDA
-          RESET: I2C_RESET
-          INTA: MCP_B_INT
-          INTB: MCP2_INTB_NC
-          A0: VCC       # address 0x21
-          A1: GND
-          A2: GND
-          # GPB bank - rest of home + bottom row
-          GPB0: sw_matrix_index_home
-          GPB1: sw_matrix_inner_home
-          GPB2: sw_matrix_outer_bottom
-          GPB3: sw_matrix_pinky_bottom
-          GPB4: sw_matrix_ring_bottom
-          GPB5: sw_matrix_middle_bottom
-          GPB6: sw_matrix_index_bottom
-          GPB7: sw_matrix_inner_bottom
-          # GPA bank - mod row + thumbs + scrollwheel switch + spares
-          GPA0: sw_matrix_middle_mod
-          GPA1: sw_matrix_index_mod
-          GPA2: sw_thumbs_layer_cluster
-          GPA3: sw_thumbs_space_cluster
-          GPA4: ENC_SW       # scrollwheel button via I/O expander
-          # GPA5-7 left as spares for future expansion
+      # === I/O expanders (mcp23017 x2) REMOVED - see the diode-matrix
+      # note above. Switches now scan directly off the MS88SF3 via the
+      # col*/row* nets + per-switch diodes. The encoder button (ENC_SW)
+      # moved from mcp_b GPA4 to MCU P39/P0.13.
 
       # === USB-C receptacle
       # HRO TYPE-C-31-M-12. Pad names match the marbastlib KiCad
@@ -652,26 +580,8 @@ pcbs:
         where: mcu
         adjust.shift: [-7.35, -9.87]
         params: { side: B, label: C6, from: VDD_MCU, to: GND } # 100nF, next to P31
-      c7_vcc_mcp1:
-        what: passive_0603
-        where: mcp_a
-        adjust: { shift: [0.7, 11], rotate: 0 }
-        params: { side: B, label: C7, from: VCC, to: GND }    # 100nF
-      c8_vcc_mcp2:
-        what: passive_0603
-        where: mcp_b
-        adjust: { shift: [6.3, 1.9], rotate: 90 }
-        params: { side: B, label: C8, from: VCC, to: GND }    # 100nF
-      r1_i2c_scl_pullup:
-        what: passive_0603
-        where: mcp_a
-        adjust: { shift: [-6.1, 9.5], rotate: 90 }
-        params: { side: B, label: R1, from: VCC, to: I2C_SCL }   # 4.7k
-      r2_i2c_sda_pullup:
-        what: passive_0603
-        where: mcp_a
-        adjust: { shift: [-6.1, 6.5], rotate: 90 }
-        params: { side: B, label: R2, from: VCC, to: I2C_SDA }   # 4.7k
+      # C7/C8 (MCP decoupling) + R1/R2 (I2C pull-ups) REMOVED with the
+      # expanders (diode-matrix conversion).
       r3_usb_cc1:
         what: passive_0603
         where: usb_c
@@ -687,11 +597,7 @@ pcbs:
         where: charge_ic
         adjust.shift: [0.4, 3.7]
         params: { side: B, label: R5, from: PROG, to: GND }      # 12k = ~100mA charge
-      r6_i2c_reset_pullup:
-        what: passive_0603
-        where: mcp_b
-        adjust: { shift: [6.9, -3], rotate: 90 }
-        params: { side: B, label: R6, from: VCC, to: I2C_RESET } # 100k
+      # R6 (I2C_RESET pull-up) REMOVED with the expanders.
       r7_reset_pullup:
         what: passive_0603
         where: mcu
@@ -704,8 +610,8 @@ pcbs:
       # one F-side SMD part - hand-solder it or pay for 2-sided PCBA.)
       r8_charge_led:
         what: passive_0603
-        where: mcp_b
-        adjust.shift: [-4, -11.3]
+        where: charge_ic   # was mcp_b (removed); re-place in KiCad
+        adjust.shift: [-2, 6]
         params: { side: B, label: R8, from: VBUS, to: CHG_LED }  # 1k limit
       d1_charge_led:
         what: passive_0603

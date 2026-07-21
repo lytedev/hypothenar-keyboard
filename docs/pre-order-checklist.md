@@ -9,6 +9,24 @@ only when every 🔴 item below is done and both halves pass a clean DRC.
 Derived from the 2026-07 validation pass (netlist ERC cross-read +
 `kicad-cli` DRC on `routed/keyboard-left.kicad_pcb` + BOM review).
 
+> **⚠️ ARCHITECTURE CHANGED (2026-07): I2C expanders → diode matrix.**
+> The 2× MCP23017 + I2C are gone; switches now scan as a direct diode
+> matrix off the MS88SF3 (ergogen done + validated). This makes some
+> items below stale — the routed boards are now doubly-outdated (the old
+> layout AND the old architecture), so **both halves are a fresh route
+> from the new scaffold.** Two new must-do items:
+> - **Firmware kscan conversion** (🔴 new, item 5): the ZMK `hypothenar.dts`
+>   still has `i2c0` + `mcp23017` nodes and `hypothenar.dtsi` scans off
+>   `&mcp_*` — it won't build. Swap to `zmk,kscan-gpio-matrix`. Pin map
+>   (from `config.yaml`): **rows** __num__=P0.26, __top__=P0.27,
+>   __home__=P0.31, __bottom__=P0.30, __mod__=P0.02, __thumb__=P0.03;
+>   **cols** col0=P0.06, col1=P0.07, col2=P0.08, col3=P0.09, col4=P0.10,
+>   col5=P0.11; encoder A=P0.29, B=P0.28, **button ENC_SW=P0.13**. Also
+>   fixes the old encoder-on-expander bug for free.
+> - **BOM update** (part of item 4): remove the 2× MCP23017 + I2C
+>   pull-ups/decoupling; add 28 diodes/half (Basic, e.g. 1N4148W / SOD-123)
+>   — net *savings* (drops ~2 Extended setup fees).
+
 ---
 
 ## Done in this pass (source fixes)
